@@ -1,13 +1,17 @@
 const mongoose = require("mongoose");
 const productSchema = new mongoose.Schema(
   {
-    name: { type: String, require: true, unique: true },
-    image: { type: String, require: true }, //Link ảnh
-    type: { type: String, require: true }, //Catalog
-    price: { type: Number, require: true },
-    countInStock: { type: Number, require: true }, //số lượng sp
-    rating: { type: Number, require: true },
-    description: { type: String},
+    productName: { type: String, required: true, unique: true },
+    productImage: { type: String, required: true }, //Link ảnh
+    productCategory: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
+      required: true,
+    },
+    productPrice: { type: Number, required: true },
+    productQuantity: { type: Number, required: true }, //số lượng sp
+    productRating: { type: Number, required: false },
+    productDescription: { type: String, required: true },
   },
   {
     timestamps: true,

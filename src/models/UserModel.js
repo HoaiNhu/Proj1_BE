@@ -1,18 +1,36 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const userSchema = new mongoose.Schema(
-    {
-        name: {type: String, require: true},
-        phone: {type: Number, require: true},
-        email: {type: String, require: true, unique: true},
-        password: {type: String, require: true},
-        isAdmin: {type: Boolean, default: false, require: true},
-        access_token: {type: String, require: true},
-        refresh_token: {type: String, require:true},
-
+  {
+    familyName: { type: String, required: true },
+    name: { type: String, required: true },
+    userPhone: { type: Number, required: true },
+    userEmail: { type: String, required: true, unique: true },
+    userPassword: { type: String, required: true },
+    userAddress: {
+      ward: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Ward", // Liên kết đến model Ward
+        required: true,
+      },
+      district: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "District", // Liên kết đến model District
+        required: true,
+      },
+      city: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "City", // Liên kết đến model City
+        required: true,
+      },
     },
-    {
-        timestamps: true,
-    }
+    userImage: { type: String, required: false },
+    isAdmin: { type: Boolean, default: false, required: true },
+    access_token: { type: String, required: true },
+    refresh_token: { type: String, required: true },
+  },
+  {
+    timestamps: true,
+  }
 );
 
 const User = mongoose.model("User", userSchema);
