@@ -1,13 +1,13 @@
 const Category = require("../models/CategoryModel");
 
-//tạo product
+//tạo Category
 const createCategory = (newCategory) => {
   return new Promise(async (resolve, reject) => {
     const { code, name,description } =
     newCategory;
 
     try {
-      //check tên sản phẩm
+      //check tên category
       const checkCategory = await Category.findOne({
         name: name,
       });
@@ -58,7 +58,7 @@ const updateCategory = (id, data) => {
       const updatedCategory = await Category.findByIdAndUpdate(id, data, {
         new: true,
       });
-      //console.log("updatedProduct", updatedProduct);
+      //console.log("updatedCategory", updatedCategory);
       resolve({
         status: "OK",
         message: "SUCCESS",
@@ -70,17 +70,17 @@ const updateCategory = (id, data) => {
   });
 };
 
-//delete product
+//delete category
 const deleteCategory = (id) => {
   return new Promise(async (resolve, reject) => {
     try {
-      //check product created
+      //check category created
       const checkCategory = await Category.findOne({
         _id: id,
       });
-      //console.log("checkProduct", checkProduct);
+      //console.log("checkCategory", checkCategory);
 
-      //nếu Product ko tồn tại
+      //nếu category ko tồn tại
       if (checkCategory === null) {
         resolve({
           status: "OK",
@@ -88,11 +88,11 @@ const deleteCategory = (id) => {
         });
       }
 
-      await Product.findByIdAndDelete(id);
-      //console.log("updatedProduct", updatedProduct);
+      await Category.findByIdAndDelete(id);
+      //console.log("updatedCategory", updatedCategory);
       resolve({
         status: "OK",
-        message: "DELETE Product IS SUCCESS",
+        message: "DELETE Category IS SUCCESS",
       });
     } catch (e) {
       reject(e);
@@ -100,27 +100,27 @@ const deleteCategory = (id) => {
   });
 };
 
-// //get details product
-// const getDetailsProduct = (id) => {
+// //get details Category
+// const getDetailsCategory = (id) => {
 //   return new Promise(async (resolve, reject) => {
 //     try {
 //       //check email created
-//       const product = await Product.findOne({
+//       const Category = await Category.findOne({
 //         _id: id,
 //       });
 
-//       //nếu product ko tồn tại
-//       if (product === null) {
+//       //nếu Category ko tồn tại
+//       if (Category === null) {
 //         resolve({
 //           status: "OK",
-//           message: "The product is not defined",
+//           message: "The Category is not defined",
 //         });
 //       }
 
 //       resolve({
 //         status: "OK",
 //         message: "SUCCESS",
-//         data: product,
+//         data: Category,
 //       });
 //     } catch (e) {
 //       reject(e);
@@ -151,21 +151,21 @@ const getAllCategory = (limit, page, sort, filter) => {
         const objectSort = {};
         objectSort[sort[1]] = sort[0];
         //console.log('objectSort', objectSort)
-        const allCategorySort = await Product.find().limit(limit).skip(page * limit).sort(objectSort);
+        const allCategorySort = await Category.find().limit(limit).skip(page * limit).sort(objectSort);
         resolve({
           status: "OK",
-          message: "Get all Product IS SUCCESS",
+          message: "Get all Category IS SUCCESS",
           data: allCategorySort,
           total: totalCategory,
           pageCurrent: Number(page + 1),
-          totalPage: Math.ceil(totalProduct / limit),
+          totalPage: Math.ceil(totalCategory / limit),
         });
       }
 
-      const allCategory = await Product.find().limit(limit).skip(page * limit);
+      const allCategory = await Category.find().limit(limit).skip(page * limit);
       resolve({
         status: "OK",
-        message: "Get all Product IS SUCCESS",
+        message: "Get all Category IS SUCCESS",
         data: allCategory,
         total: totalCategory,
         pageCurrent: Number(page + 1),
@@ -181,6 +181,6 @@ module.exports = {
   createCategory,
   updateCategory,
   deleteCategory,
- // getDetailsProduct,
+ // getDetailsCategory,
   getAllCategory,
 };
