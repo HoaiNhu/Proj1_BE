@@ -25,7 +25,8 @@ const paymentSchema = new mongoose.Schema(
       required: true, // Số tài khoản người dùng
     },
     adminBank: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Bank", // Liên kết với model Bank
       required: true, // Tên ngân hàng của admin
     },
     adminBankNumber: {
