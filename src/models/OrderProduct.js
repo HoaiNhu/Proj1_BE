@@ -4,12 +4,13 @@ const orderSchema = new mongoose.Schema(
   {
     orderItems: [
       {
-        name: { type: String, required: true },
-        amount: { type: Number, required: true },
+        userCode: { type: String, required: true },
+        userName: { type: String, required: true },
+        orderCode: { type: String, required: true },
         image: { type: String, required: true },
         price: { type: Number, required: true },
         product: {
-          type: mongoose.Scheme.Types.ObjectId,
+          type: mongoose.Schema.Types.ObjectId,
           ref: "Product",
           require: true,
         },
@@ -27,7 +28,7 @@ const orderSchema = new mongoose.Schema(
     shippingPrice: { type: Number, required: true },
     taxPrice: { type: Number, required: true },
     totalPrice: { type: Number, required: true },
-    user: { type: mongoose.Scheme.Types.ObjectId, ref: "User", required: true },
+    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     isPaid: { type: Boolean, required: true },
     paidAt: { type: Date },
     isDelivered: { type: Boolean, default: false },

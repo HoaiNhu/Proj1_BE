@@ -9,6 +9,10 @@ const statusSchema = new mongoose.Schema(
       enum: ["PENDING", "PROCESSING", "DELIVERING", "COMPLETED", "CANCELLED"],
     },
     statusName: { type: String, required: true },
+    statusDescription: { 
+      type: String, 
+      required: false 
+    }, // Mô tả trạng thái (nếu cần)
   },
   {
     timestamps: true,
