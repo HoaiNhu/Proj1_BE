@@ -2,41 +2,69 @@ const mongoose = require("mongoose");
 
 const orderSchema = new mongoose.Schema(
   {
+    // Mã đơn hàng duy nhất
+    orderCode: { type: String, required: true, unique: true },
+
+    // Danh sách sản phẩm trong đơn hàng
     orderItems: [
       {
-        name: { type: String, required: true },
-        amount: { type: Number, required: true },
-        image: { type: String, required: true },
-        price: { type: Number, required: true },
         product: {
-          type: mongoose.Scheme.Types.ObjectId,
+          type: mongoose.Schema.Types.ObjectId,
           ref: "Product",
-          require: true,
+          required: true,
         },
+        quantity: { type: Number, required: true }, // Số lượng
+        total: { type: Number, required: true }, // Tổng tiền cho sản phẩm
       },
     ],
 
+    // Địa chỉ giao hàng
     shippingAddress: {
       fullName: { type: String, required: true },
       address: { type: String, required: true },
-      city: { type: String, required: true },
-      phone: { type: Number, required: true },
+      ward: { type: mongoose.Schema.Types.ObjectId, ref: "Ward", required: true },
+      district: { type: mongoose.Schema.Types.ObjectId, ref: "District", required: true },
+      city: { type: mongoose.Schema.Types.ObjectId, ref: "City", required: true },
+      phone: { type: String, required: true },
     },
-    paymentMethod: { type: String, required: true },
-    itemsPrice: { type: Number, required: true },
-    shippingPrice: { type: Number, required: true },
-    taxPrice: { type: Number, required: true },
-    totalPrice: { type: Number, required: true },
-    user: { type: mongoose.Scheme.Types.ObjectId, ref: "User", required: true },
-    isPaid: { type: Boolean, required: true },
+
+    // Phương thức thanh toán
+    paymentMethod: { type: String, required: true, default: "Online Payment" },
+
+    // Người dùng đặt hàng
+    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+
+    // Trạng thái đơn hàng
+    status: { type: mongoose.Schema.Types.ObjectId, ref: "Status", required: true },
+
+    // Các giá trị thanh toán
+    shippingPrice: { type: Number, required: true, default: 30000 }, // Phí vận chuyển cố định
+    totalItemPrice: { type: Number, required: true }, // Tổng tiền hàng
+    totalPrice: { type: Number, required: true }, // Tổng thanh toán (bao gồm vận chuyển)
+
+    // Thời gian thanh toán và giao hàng
+    isPaid: { type: Boolean, default: false },
     paidAt: { type: Date },
     isDelivered: { type: Boolean, default: false },
     deliveredAt: { type: Date },
   },
   {
-    timestamps: true,
+    timestamps: true, // Tự động thêm createdAt và updatedAt
   }
 );
+
+// Middleware để tính tổng tiền hàng và tổng thanh toán
+orderSchema.pre("save", function (next) {
+  const order = this;
+  // Tính tổng tiền hàng
+  order.totalItemPrice = order.orderItems.reduce(
+    (total, item) => total + item.total,
+    0
+  );
+  // Tính tổng thanh toán
+  order.totalPrice = order.totalItemPrice + order.shippingPrice;
+  next();
+});
 
 const Order = mongoose.model("Order", orderSchema);
 module.exports = Order;
