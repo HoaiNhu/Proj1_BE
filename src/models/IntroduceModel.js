@@ -23,16 +23,16 @@ const introduceSchema = new mongoose.Schema(
       type: String,
       required: false, // Hình ảnh đại diện, không bắt buộc
     },
-    introduceAuthor: {
-      type: String,
-      required: false, // Tên tác giả, nếu có
-    },
-    introduceTags: [
-      {
-        type: String, // Các từ khóa hoặc thể loại liên quan đến giới thiệu
-        required: false,
-      },
-    ],
+    // introduceAuthor: {
+    //   type: String,
+    //   required: false, // Tên tác giả, nếu có
+    // },
+    // introduceTags: [
+    //   {
+    //     type: String, // Các từ khóa hoặc thể loại liên quan đến giới thiệu
+    //     required: false,
+    //   },
+    // ],
     isActive: {
       type: Boolean,
       default: true, // Trạng thái hiển thị (mặc định là active)
