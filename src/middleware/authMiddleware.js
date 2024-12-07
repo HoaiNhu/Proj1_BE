@@ -2,55 +2,68 @@ const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
 dotenv.config();
 
-//set auth cho admin
+// Middleware xác thực cho admin
 const authMiddleware = (req, res, next) => {
-  const token = req.headers.token?.split(" ")[1];
-  // verify a token symmetric
-  jwt.verify(token, process.env.ACCESS_TOKEN, function (err, user) {
+  const authHeader = req.headers.token;
+  if (!authHeader) {
+    return res.status(401).json({
+      status: "ERR",
+      message: "Access token is missing",
+    });
+  }
+
+  const token = authHeader.split(" ")[1];
+
+  jwt.verify(token, process.env.ACCESS_TOKEN, (err, decoded) => {
     if (err) {
-      return res.status(404).json({
+      return res.status(401).json({
         status: "ERR",
-        message: "The authentication ",
+        message: "Invalid or expired access token",
       });
     }
 
-    //nếu có user isAdmin
-    const { payload } = user;
-    if (payload?.isAdmin) {
-      console.log("true");
+    // Kiểm tra quyền admin
+    if (decoded.payload?.isAdmin) {
+      console.log("Admin authentication successful");
       next();
     } else {
-      return res.status(404).json({
+      return res.status(403).json({
         status: "ERR",
-        message: "The authentication ",
+        message: "You are not authorized to perform this action",
       });
     }
   });
 };
 
-//set auth cho user lấy info của mình
+// Middleware xác thực cho user lấy thông tin cá nhân
 const authUserMiddleware = (req, res, next) => {
-  const token = req.headers.token?.split(" ")[1];
+  const authHeader = req.headers.token;
+  if (!authHeader) {
+    return res.status(401).json({
+      status: "ERR",
+      message: "Access token is missing",
+    });
+  }
+
+  const token = authHeader.split(" ")[1];
   const userId = req.params.id;
-  // verify a token symmetric
-  jwt.verify(token, process.env.ACCESS_TOKEN, function (err, user) {
+
+  jwt.verify(token, process.env.ACCESS_TOKEN, (err, decoded) => {
     if (err) {
-      return res.status(404).json({
+      return res.status(401).json({
         status: "ERR",
-        message: "The authentication ",
+        message: "Invalid or expired access token",
       });
     }
 
-    //nếu có user isAdmin
-    const { payload } = user;
-    if (payload?.isAdmin || payload?.id === userId)//=== thì cho đi tiếp 
-    {
-      console.log("true");
+    // Kiểm tra quyền admin hoặc user truy cập đúng tài khoản của mình
+    if (decoded.payload?.isAdmin || decoded.payload?.id === userId) {
+      console.log("User authentication successful");
       next();
     } else {
-      return res.status(404).json({
+      return res.status(403).json({
         status: "ERR",
-        message: "The authentication ",
+        message: "You are not authorized to access this resource",
       });
     }
   });
