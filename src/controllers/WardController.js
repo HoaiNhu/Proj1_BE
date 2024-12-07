@@ -71,7 +71,7 @@ const deleteWard = async (req, res) => {
 };
 
 // Lấy chi tiết ward
-const getDetailWard = async (req, res) => {
+const getDetailsWard = async (req, res) => {
   try {
     const wardId = req.params.id;
 
@@ -122,6 +122,6 @@ module.exports = {
   createWard,
   updateWard,
   deleteWard,
-  getDetailWard,
+  getDetailsWard,
   getAllWard,
 };

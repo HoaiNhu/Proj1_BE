@@ -96,7 +96,7 @@ const deleteWard = (id) => {
 };
 
 // Lấy chi tiết Ward
-const getDetailWard = (id) => {
+const getDetailsWard = (id) => {
   return new Promise(async (resolve, reject) => {
     try {
       const ward = await Ward.findById(id);
@@ -171,6 +171,6 @@ module.exports = {
   createWard,
   updateWard,
   deleteWard,
-  getDetailWard,
+  getDetailsWard,
   getAllWard,
 };
