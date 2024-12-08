@@ -7,10 +7,29 @@ const createUser = async (req, res) => {
   try {
     //console.log(req.body);
     //test input data
-    const { name, phone, email, password, confirmPassword } = req.body;
+    const {
+      familyName,
+      userName,
+      userPhone,
+      userEmail,
+      userPassword,
+      userConfirmPassword,
+      userAddress,
+      userImage,
+      userRole,
+    } = req.body;
     const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/; //check email
     const isValidEmail = emailPattern.test(email);
-    if (!name || !phone || !email || !password || !confirmPassword) {
+    if (
+      !familyName ||
+      !userName ||
+      !userPhone ||
+      !userEmail ||
+      !userPassword ||
+      !userConfirmPassword ||
+      !userAddress ||
+      !userImage
+    ) {
       //check have
       return res.status(200).json({
         status: "ERR",
@@ -21,7 +40,7 @@ const createUser = async (req, res) => {
         status: "ERR",
         message: "The input is not email",
       });
-    } else if (password !== confirmPassword) {
+    } else if (userPassword !== userConfirmPassword) {
       return res.status(200).json({
         status: "ERR",
         message: "The password is not equal confirmPassword",
@@ -44,10 +63,29 @@ const loginUser = async (req, res) => {
   try {
     console.log(req.body);
     //test input data
-    const { name, phone, email, password, confirmPassword } = req.body;
+    const {
+      familyName,
+      userName,
+      userPhone,
+      userEmail,
+      userPassword,
+      userConfirmPassword,
+      userAddress,
+      userImage,
+      userRole,
+    } = req.body;
     const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/; //check email
     const isValidEmail = emailPattern.test(email);
-    if (!name || !phone || !email || !password || !confirmPassword) {
+    if (
+      !familyName ||
+      !userName ||
+      !userPhone ||
+      !userEmail ||
+      !userPassword ||
+      !userConfirmPassword ||
+      !userAddress ||
+      !userImage
+    ) {
       //check have
       return res.status(200).json({
         status: "ERR",
@@ -174,6 +212,167 @@ const refreshToken = async (req, res) => {
     });
   }
 };
+
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(200).json({
+        status: "ERR",
+        message: "The email is required",
+      });
+    }
+    const response = await UserServices.forgotPassword(email);
+    return res.status(200).json(response);
+  } catch (e) {
+    return res.status(404).json({
+      message: e,
+    });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+    if (!token || !newPassword) {
+      return res.status(200).json({
+        status: "ERR",
+        message: "The token and new password are required",
+      });
+    }
+    const response = await UserServices.resetPassword(token, newPassword);
+    return res.status(200).json(response);
+  } catch (e) {
+    return res.status(404).json({
+      message: e,
+    });
+  }
+};
+
+const changePassword = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { oldPassword, newPassword } = req.body;
+
+    if (!oldPassword || !newPassword) {
+      return res.status(200).json({
+        status: "ERR",
+        message: "The old password and new password are required",
+      });
+    }
+
+    const response = await UserServices.changePassword(
+      userId,
+      oldPassword,
+      newPassword
+    );
+    return res.status(200).json(response);
+  } catch (e) {
+    return res.status(404).json({
+      message: e,
+    });
+  }
+};
+
+const updateAvatar = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { avatarUrl } = req.body;
+
+    if (!avatarUrl) {
+      return res.status(200).json({
+        status: "ERR",
+        message: "The avatar URL is required",
+      });
+    }
+
+    const response = await UserServices.updateAvatar(userId, avatarUrl);
+    return res.status(200).json(response);
+  } catch (e) {
+    return res.status(404).json({
+      message: e,
+    });
+  }
+};
+
+const updateUserRole = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const { userRole } = req.body;
+
+    if (!userRole) {
+      return res.status(200).json({
+        status: "ERR",
+        message: "The userRole is required",
+      });
+    }
+
+    const response = await UserServices.updateUserRole(userId, userRole);
+    return res.status(200).json(response);
+  } catch (e) {
+    return res.status(404).json({
+      message: e,
+    });
+  }
+};
+
+// Lấy lịch sử đơn hàng của người dùng
+const getOrderHistory = async (req, res) => {
+  try {
+    const userId = req.user._id; // Lấy ID người dùng từ token đã xác thực
+    const response = await UserServices.getOrderHistory(userId);
+    return res.status(200).json(response);
+  } catch (e) {
+    return res.status(404).json({
+      message: e,
+    });
+  }
+};
+
+// Lấy chi tiết đơn hàng
+const getOrderDetails = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    if (!orderId) {
+      return res.status(400).json({
+        status: "ERR",
+        message: "The orderId is required",
+      });
+    }
+
+    const response = await UserServices.getOrderDetails(orderId);
+    return res.status(200).json(response);
+  } catch (e) {
+    return res.status(404).json({
+      message: e,
+    });
+  }
+};
+
+// Lấy tất cả tin tức
+const getAllNews = async (req, res) => {
+  try {
+    const response = await UserServices.getAllNews();
+    return res.status(200).json(response);
+  } catch (e) {
+    return res.status(404).json({
+      message: e,
+    });
+  }
+};
+
+// Lấy thông tin giới thiệu
+const getIntroduce = async (req, res) => {
+  try {
+    const response = await UserServices.getIntroduce();
+    return res.status(200).json(response);
+  } catch (e) {
+    return res.status(404).json({
+      message: e,
+    });
+  }
+};
+
 module.exports = {
   createUser,
   loginUser,
@@ -182,4 +381,13 @@ module.exports = {
   getAllUser,
   getDetailsUser,
   refreshToken,
+  forgotPassword,
+  resetPassword,
+  changePassword,
+  updateUserRole,
+  updateAvatar,
+  getOrderHistory,
+  getOrderDetails,
+  getAllNews,
+  getIntroduce,
 };
