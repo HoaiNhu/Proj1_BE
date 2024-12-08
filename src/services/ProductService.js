@@ -1,182 +1,194 @@
 const Product = require("../models/ProductModel");
 
-//tạo product
+/**
+ * Create a new product
+ */
 const createProduct = (newProduct) => {
   return new Promise(async (resolve, reject) => {
-    const { name, image, type, price, countInStock, rating, description } =
-      newProduct;
-
     try {
-      //check tên sản phẩm
+      const {
+        productCode,
+        productName,
+        productImage,
+        productCategory,
+        productPrice,
+        productQuantity,
+        productExpiry,
+        productRating,
+        productDescription,
+      } = newProduct;
+
+      // Check for duplicate productCode or productName
       const checkProduct = await Product.findOne({
-        name: name,
+        $or: [{ productCode }, { productName }],
       });
-      //nếu name product đã tồn tại
-      if (checkProduct !== null) {
-        resolve({
-          status: "OK",
-          message: "The name of product is already",
+
+      if (checkProduct) {
+        return resolve({
+          status: "ERR",
+          message: "Product code or name already exists.",
         });
       }
 
-      const createdProduct = await Product.create({
-        name,
-        image,
-        type,
-        price,
-        countInStock,
-        rating,
-        description,
+      const createdProduct = await Product.create(newProduct);
+
+      resolve({
+        status: "OK",
+        message: "Product created successfully",
+        data: createdProduct,
       });
-      if (createdProduct) {
-        resolve({
-          status: "OK",
-          message: "SUCCESS",
-          data: createdProduct,
-        });
-      }
     } catch (e) {
-      reject(e);
+      reject({
+        status: "ERR",
+        message: e.message || "Failed to create product",
+      });
     }
   });
 };
 
-//update product
+/**
+ * Update an existing product
+ */
 const updateProduct = (id, data) => {
   return new Promise(async (resolve, reject) => {
     try {
-      //check name created
-      const checkProduct = await Product.findOne({
-        _id: id,
-      });
-      //console.log("checkUser", checkUser);
+      // Check if product exists
+      const checkProduct = await Product.findById(id);
 
-      //nếu product ko tồn tại
-      if (checkProduct === null) {
-        resolve({
-          status: "OK",
-          message: "The product is not defined",
+      if (!checkProduct) {
+        return resolve({
+          status: "ERR",
+          message: "Product not found",
+        });
+      }
+
+      // Check for duplicate productName (excluding the current product)
+      const duplicateProduct = await Product.findOne({
+        productName: data.productName,
+        _id: { $ne: id },
+      });
+
+      if (duplicateProduct) {
+        return resolve({
+          status: "ERR",
+          message: "Product name already exists",
         });
       }
 
       const updatedProduct = await Product.findByIdAndUpdate(id, data, {
         new: true,
       });
-      //console.log("updatedProduct", updatedProduct);
+
       resolve({
         status: "OK",
-        message: "SUCCESS",
+        message: "Product updated successfully",
         data: updatedProduct,
       });
     } catch (e) {
-      reject(e);
+      reject({
+        status: "ERR",
+        message: e.message || "Failed to update product",
+      });
     }
   });
 };
 
-//delete product
+/**
+ * Delete a product
+ */
 const deleteProduct = (id) => {
   return new Promise(async (resolve, reject) => {
     try {
-      //check product created
-      const checkProduct = await Product.findOne({
-        _id: id,
-      });
-      //console.log("checkProduct", checkProduct);
+      const checkProduct = await Product.findById(id);
 
-      //nếu Product ko tồn tại
-      if (checkProduct === null) {
-        resolve({
-          status: "OK",
-          message: "The product is not defined",
+      if (!checkProduct) {
+        return resolve({
+          status: "ERR",
+          message: "Product not found",
         });
       }
 
       await Product.findByIdAndDelete(id);
-      //console.log("updatedProduct", updatedProduct);
+
       resolve({
         status: "OK",
-        message: "DELETE Product IS SUCCESS",
+        message: "Product deleted successfully",
       });
     } catch (e) {
-      reject(e);
+      reject({
+        status: "ERR",
+        message: e.message || "Failed to delete product",
+      });
     }
   });
 };
 
-//get details product
+/**
+ * Get details of a single product
+ */
 const getDetailsProduct = (id) => {
   return new Promise(async (resolve, reject) => {
     try {
-      //check email created
-      const product = await Product.findOne({
-        _id: id,
-      });
+      const product = await Product.findById(id).populate("productCategory");
 
-      //nếu product ko tồn tại
-      if (product === null) {
-        resolve({
-          status: "OK",
-          message: "The product is not defined",
+      if (!product) {
+        return resolve({
+          status: "ERR",
+          message: "Product not found",
         });
       }
 
       resolve({
         status: "OK",
-        message: "SUCCESS",
+        message: "Product retrieved successfully",
         data: product,
       });
     } catch (e) {
-      reject(e);
+      reject({
+        status: "ERR",
+        message: e.message || "Failed to get product details",
+      });
     }
   });
 };
 
-//get all product
+/**
+ * Get all products with pagination, filtering, and sorting
+ */
 const getAllProduct = (limit, page, sort, filter) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const totalProduct = await Product.countDocuments();
-      
-      if(filter){
-        const label = filter[0];
-        const allProductFilter = await Product.find({ [label]: {'$regex': filter[1] } }).limit(limit).skip(page * limit) //filter gần đúng
-        resolve({
-          status: "OK",
-          message: "Get all Product IS SUCCESS",
-          data: allProductFilter,
-          total: totalProduct,
-          pageCurrent: Number(page + 1),
-          totalPage: Math.ceil(totalProduct / limit),
-        });
+      const query = {};
+
+      // Add filtering condition
+      if (filter) {
+        const [field, value] = filter;
+        query[field] = { $regex: value, $options: "i" }; // Case-insensitive partial match
       }
 
-      if(sort){
-        const objectSort = {};
-        objectSort[sort[1]] = sort[0];
-        //console.log('objectSort', objectSort)
-        const allProductSort = await Product.find().limit(limit).skip(page * limit).sort(objectSort);
-        resolve({
-          status: "OK",
-          message: "Get all Product IS SUCCESS",
-          data: allProductSort,
-          total: totalProduct,
-          pageCurrent: Number(page + 1),
-          totalPage: Math.ceil(totalProduct / limit),
-        });
-      }
+      const totalProduct = await Product.countDocuments(query);
 
-      const allProduct = await Product.find().limit(limit).skip(page * limit);
+      // Add sorting condition
+      const sortCondition = sort ? { [sort[1]]: sort[0] } : {};
+
+      const allProduct = await Product.find(query)
+        .limit(limit)
+        .skip(page * limit)
+        .sort(sortCondition);
+
       resolve({
         status: "OK",
-        message: "Get all Product IS SUCCESS",
+        message: "Products retrieved successfully",
         data: allProduct,
         total: totalProduct,
-        pageCurrent: Number(page + 1),
+        pageCurrent: Number(page) + 1,
         totalPage: Math.ceil(totalProduct / limit),
       });
     } catch (e) {
-      reject(e);
+      reject({
+        status: "ERR",
+        message: e.message || "Failed to get products",
+      });
     }
   });
 };
