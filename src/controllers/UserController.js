@@ -5,7 +5,7 @@ const validator = require("validator");
 //tạo tài khoản
 const createUser = async (req, res) => {
   try {
-    //console.log(req.body);
+    // console.log(req.body);
     //test input data
     const {
       familyName,
@@ -16,19 +16,20 @@ const createUser = async (req, res) => {
       userConfirmPassword,
       userAddress,
       userImage,
-      userRole,
+      isAdmin,
     } = req.body;
+
     const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/; //check email
-    const isValidEmail = emailPattern.test(email);
+    const isValidEmail = emailPattern.test(userEmail);
     if (
       !familyName ||
       !userName ||
       !userPhone ||
       !userEmail ||
       !userPassword ||
-      !userConfirmPassword ||
-      !userAddress ||
-      !userImage
+      !userConfirmPassword
+      // !userAddress ||
+      // !userRole
     ) {
       //check have
       return res.status(200).json({
@@ -64,48 +65,53 @@ const loginUser = async (req, res) => {
     console.log(req.body);
     //test input data
     const {
-      familyName,
-      userName,
-      userPhone,
+      // familyName,
+      // userName,
+      // userPhone,
       userEmail,
       userPassword,
-      userConfirmPassword,
-      userAddress,
-      userImage,
-      userRole,
+      // userConfirmPassword,
+      // userAddress,
+      // userImage,
+      // userRole,
     } = req.body;
     const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/; //check email
-    const isValidEmail = emailPattern.test(email);
+    const isValidEmail = emailPattern.test(userEmail);
     if (
-      !familyName ||
-      !userName ||
-      !userPhone ||
+      // !familyName ||
+      // !userName ||
+      // !userPhone ||
       !userEmail ||
-      !userPassword ||
-      !userConfirmPassword ||
-      !userAddress ||
-      !userImage
+      !userPassword
+      // !userConfirmPassword ||
+      // !userAddress ||
+      // !userImage
     ) {
       //check have
-      return res.status(200).json({
+      return res.status(400).json({
         status: "ERR",
-        message: "The input is required",
+        message: "Email and password are required",
       });
     } else if (!isValidEmail) {
       return res.status(200).json({
         status: "ERR",
         message: "The input is not email",
       });
-    } else if (password !== confirmPassword) {
-      return res.status(200).json({
-        status: "ERR",
-        message: "The password is not equal confirmPassword",
-      });
+      // } else if (password !== userConfirmPassword) {
+      //   return res.status(200).json({
+      //     status: "ERR",
+      //     message: "The password is not equal confirmPassword",
+      //   });
     }
 
-    console.log("isValidEmail ", isValidEmail);
+    // console.log("isValidEmail ", isValidEmail);
 
     const response = await UserServices.loginUser(req.body);
+    if (!response) {
+      return res
+        .status(500)
+        .json({ status: "ERR", message: "Internal Server Error" });
+    }
     return res.status(200).json(response);
   } catch (e) {
     return res.status(404).json({

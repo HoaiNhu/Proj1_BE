@@ -18,6 +18,6 @@ router.put("/update-role/:id", authMiddleware, userController.updateUserRole);
 router.get("/order-history", authUserMiddleware, userController.getOrderHistory);
 router.get("/order-details/:orderId", authUserMiddleware, userController.getOrderDetails);
 router.get("/news", userController.getAllNews);
-router.get("/introduce", userController.getAboutUs);
+router.get("/introduce", userController.getIntroduce);
 
 module.exports = router;

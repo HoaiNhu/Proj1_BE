@@ -1,6 +1,6 @@
 const User = require("../models/UserModel");
 const bcrypt = require("bcrypt");
-const { generalAccessToken } = require("./JwtService");
+const { generalAccessToken, generalRefreshToken } = require("./JwtService");
 
 //tạo user
 const createUser = (newUser) => {
@@ -14,12 +14,12 @@ const createUser = (newUser) => {
       userConfirmPassword,
       userAddress,
       userImage,
-      userRole,
+      isAdmin,
     } = newUser;
 
     try {
       // Check if the email already exists
-      const checkUser = await User.findOne({ userEmail });
+      const checkUser = await User.findOne({ email: userEmail });
       if (checkUser) {
         return reject({
           status: "ERR",
@@ -45,9 +45,10 @@ const createUser = (newUser) => {
         userPhone,
         userEmail,
         userPassword: hashedPassword,
+        userConfirmPassword,
         userAddress,
         userImage,
-        userRole,
+        isAdmin,
       });
 
       resolve({
@@ -69,6 +70,8 @@ const loginUser = (userLogin) => {
     try {
       // Check if the user exists
       const checkUser = await User.findOne({ userEmail });
+      // console.log("userEmail: ", userEmail);
+
       if (!checkUser) {
         return reject({
           status: "ERR",
@@ -90,12 +93,12 @@ const loginUser = (userLogin) => {
 
       const access_token = await generalAccessToken({
         id: checkUser.id,
-        isAdmin: checkUser.userRole === "admin",
+        isAdmin: checkUser.isAdmin,
       });
 
       const refresh_token = await generalRefreshToken({
         id: checkUser.id,
-        isAdmin: checkUser.userRole === "admin",
+        isAdmin: checkUser.isAdmin,
       });
 
       resolve({
@@ -105,7 +108,11 @@ const loginUser = (userLogin) => {
         refresh_token,
       });
     } catch (e) {
-      reject(e);
+      console.error("Unexpected error:", e);
+      reject({
+        status: "ERR",
+        message: "Internal Server Error",
+      });
     }
   });
 };
