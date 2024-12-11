@@ -57,7 +57,19 @@ const createUser = (newUser) => {
         data: createdUser,
       });
     } catch (e) {
-      reject(e);
+      // Kiểm tra lỗi MongoDB
+      if (e.code === 11000) {
+        reject({
+          status: "ERR",
+          message: "The email is already registered",
+        });
+      } else {
+        reject({
+          status: "ERR",
+          message: "An error occurred while creating the user",
+          error: e.message,
+        });
+      }
     }
   });
 };
