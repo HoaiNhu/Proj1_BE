@@ -1,42 +1,75 @@
 const User = require("../models/UserModel");
 const bcrypt = require("bcrypt");
-const { generalAccessToken } = require("./JwtService");
+const { generalAccessToken, generalRefreshToken } = require("./JwtService");
 
 //tạo user
 const createUser = (newUser) => {
   return new Promise(async (resolve, reject) => {
-    const { name, phone, email, password, confirmPassword } = newUser;
+    const {
+      familyName,
+      userName,
+      userPhone,
+      userEmail,
+      userPassword,
+      userConfirmPassword,
+      userAddress,
+      userImage,
+      isAdmin,
+    } = newUser;
+
     try {
-      //check email created
-      const checkUser = await User.findOne({
-        email: email,
-      });
-      //nếu email đã tồn tại
-      if (checkUser !== null) {
-        resolve({
-          status: "OK",
-          message: "The email is already",
+      // Check if the email already exists
+      const checkUser = await User.findOne({ email: userEmail });
+      if (checkUser) {
+        return reject({
+          status: "ERR",
+          message: "The email is already registered",
         });
       }
-      //mã hóa password
-      const hash = bcrypt.hashSync(password, 10);
-      console.log("hash", hash);
+
+      // Validate passwords
+      if (userPassword !== userConfirmPassword) {
+        return reject({
+          status: "ERR",
+          message: "Passwords do not match",
+        });
+      }
+
+      // Hash the password
+      const hashedPassword = bcrypt.hashSync(userPassword, 10);
+
+      // Create the user
       const createdUser = await User.create({
-        name,
-        phone,
-        email,
-        password: hash,
-        // confirmPassword
+        familyName,
+        userName,
+        userPhone,
+        userEmail,
+        userPassword: hashedPassword,
+        userConfirmPassword,
+        userAddress,
+        userImage,
+        isAdmin,
       });
-      if (createdUser) {
-        resolve({
-          status: "OK",
-          message: "SUCCESS",
-          data: createdUser,
+
+      resolve({
+        status: "OK",
+        message: "User successfully created",
+        data: createdUser,
+      });
+    } catch (e) {
+      // Kiểm tra lỗi MongoDB
+      if (e.code === 11000) {
+        reject({
+          status: "ERR",
+          message: "The email is already registered",
+        });
+      } else {
+        reject({
+          status: "ERR",
+          message: "An error occurred while creating the user",
+          error: e.message,
         });
       }
-    } catch (e) {
-      reject(e);
     }
   });
 };
@@ -44,27 +77,29 @@ const createUser = (newUser) => {
 //log in user
 const loginUser = (userLogin) => {
   return new Promise(async (resolve, reject) => {
-    const { name, phone, email, password, confirmPassword } = userLogin;
+    const { userEmail, userPassword } = userLogin;
+
     try {
-      //check email created
-      const checkUser = await User.findOne({
-        email: email,
-      });
-      //nếu email đã tồn tại
-      if (checkUser === null) {
-        resolve({
-          status: "OK",
-          message: "The user is not defined",
+      // Check if the user exists
+      const checkUser = await User.findOne({ userEmail });
+      // console.log("userEmail: ", userEmail);
+
+      if (!checkUser) {
+        return reject({
+          status: "ERR",
+          message: "User not found",
         });
       }
 
-      const comparePassword = bcrypt.compareSync(password, checkUser.password);
-      //console.log("comparePassword ", comparePassword);
-
+      // Compare passwords
+      const comparePassword = bcrypt.compareSync(
+        userPassword,
+        checkUser.userPassword
+      );
       if (!comparePassword) {
-        resolve({
-          status: "OK",
-          message: "The password or user is incorrect",
+        return reject({
+          status: "ERR",
+          message: "Incorrect password",
         });
       }
 
@@ -78,43 +113,39 @@ const loginUser = (userLogin) => {
         isAdmin: checkUser.isAdmin,
       });
 
-      //console.log("access_token ", access_token);
-
       resolve({
         status: "OK",
-        message: "SUCCESS",
+        message: "Login successful",
         access_token,
         refresh_token,
       });
     } catch (e) {
-      reject(e);
+      console.error("Unexpected error:", e);
+      reject({
+        status: "ERR",
+        message: "Internal Server Error",
+      });
     }
   });
 };
 
 //update user
+// updateUser
 const updateUser = (id, data) => {
   return new Promise(async (resolve, reject) => {
     try {
-      //check email created
-      const checkUser = await User.findOne({
-        _id: id,
-      });
-      console.log("checkUser", checkUser);
-
-      //nếu user ko tồn tại
-      if (checkUser === null) {
-        resolve({
-          status: "OK",
-          message: "The user is not defined",
+      const checkUser = await User.findById(id);
+      if (!checkUser) {
+        return reject({
+          status: "ERR",
+          message: "User not found",
         });
       }
 
       const updatedUser = await User.findByIdAndUpdate(id, data, { new: true });
-      console.log("updatedUser", updatedUser);
       resolve({
         status: "OK",
-        message: "SUCCESS",
+        message: "User updated successfully",
         data: updatedUser,
       });
     } catch (e) {
@@ -123,29 +154,22 @@ const updateUser = (id, data) => {
   });
 };
 
-//delete user
+// deleteUser
 const deleteUser = (id) => {
   return new Promise(async (resolve, reject) => {
     try {
-      //check email created
-      const checkUser = await User.findOne({
-        _id: id,
-      });
-      //console.log("checkUser", checkUser);
-
-      //nếu user ko tồn tại
-      if (checkUser === null) {
-        resolve({
-          status: "OK",
-          message: "The user is not defined",
+      const checkUser = await User.findById(id);
+      if (!checkUser) {
+        return reject({
+          status: "ERR",
+          message: "User not found",
         });
       }
 
-      await User.findByIdAndDelete(id);
-      //console.log("updatedUser", updatedUser);
+      const deletedUser = await User.findByIdAndDelete(id);
       resolve({
         status: "OK",
-        message: "DELETE USER IS SUCCESS",
+        message: "User deleted successfully",
       });
     } catch (e) {
       reject(e);
@@ -205,6 +229,195 @@ const getDetailsUser = (id) => {
 
 //tạo access token dựa vào refresh token
 
+// forgotPassword
+const forgotPassword = (email) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const response = await axios.post("/api/auth/forgot-password", { email });
+      resolve({
+        status: "OK",
+        message: "Password reset link sent successfully",
+        data: response.data,
+      });
+    } catch (e) {
+      reject({
+        status: "ERR",
+        message: e.response ? e.response.data : e.message,
+      });
+    }
+  });
+};
+
+// resetPassword
+const resetPassword = (token, newPassword) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const response = await axios.post("/api/auth/reset-password", {
+        token,
+        newPassword,
+      });
+      resolve({
+        status: "OK",
+        message: "Password reset successfully",
+        data: response.data,
+      });
+    } catch (e) {
+      reject({
+        status: "ERR",
+        message: e.response ? e.response.data : e.message,
+      });
+    }
+  });
+};
+
+// changePassword
+const changePassword = (userId, oldPassword, newPassword) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const response = await axios.put(`/api/users/${userId}/change-password`, {
+        oldPassword,
+        newPassword,
+      });
+      resolve({
+        status: "OK",
+        message: "Password changed successfully",
+        data: response.data,
+      });
+    } catch (e) {
+      reject({
+        status: "ERR",
+        message: e.response ? e.response.data : e.message,
+      });
+    }
+  });
+};
+
+// updateUserRole
+const updateUserRole = (userId, newRole) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const response = await axios.put(`/api/users/${userId}/role`, {
+        role: newRole,
+      });
+      resolve({
+        status: "OK",
+        message: "User role updated successfully",
+        data: response.data,
+      });
+    } catch (e) {
+      reject({
+        status: "ERR",
+        message: e.response ? e.response.data : e.message,
+      });
+    }
+  });
+};
+
+// updateAvatar
+const updateAvatar = (userId, avatarFile) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const formData = new FormData();
+      formData.append("avatar", avatarFile);
+      const response = await axios.put(
+        `/api/users/${userId}/avatar`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      resolve({
+        status: "OK",
+        message: "Avatar updated successfully",
+        data: response.data,
+      });
+    } catch (e) {
+      reject({
+        status: "ERR",
+        message: e.response ? e.response.data : e.message,
+      });
+    }
+  });
+};
+
+// getOrderHistory
+const getOrderHistory = (userId) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const response = await axios.get(`/api/orders/${userId}/history`);
+      resolve({
+        status: "OK",
+        message: "Order history retrieved successfully",
+        data: response.data,
+      });
+    } catch (e) {
+      reject({
+        status: "ERR",
+        message: e.response ? e.response.data : e.message,
+      });
+    }
+  });
+};
+
+// getOrderDetails
+const getOrderDetails = (orderId) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const response = await axios.get(`/api/orders/${orderId}`);
+      resolve({
+        status: "OK",
+        message: "Order details retrieved successfully",
+        data: response.data,
+      });
+    } catch (e) {
+      reject({
+        status: "ERR",
+        message: e.response ? e.response.data : e.message,
+      });
+    }
+  });
+};
+
+// getAllNews
+const getAllNews = () => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const response = await axios.get("/api/news");
+      resolve({
+        status: "OK",
+        message: "News retrieved successfully",
+        data: response.data,
+      });
+    } catch (e) {
+      reject({
+        status: "ERR",
+        message: e.response ? e.response.data : e.message,
+      });
+    }
+  });
+};
+
+// getIntroduce
+const getIntroduce = () => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const response = await axios.get("/api/introduce");
+      resolve({
+        status: "OK",
+        message: "Introduction retrieved successfully",
+        data: response.data,
+      });
+    } catch (e) {
+      reject({
+        status: "ERR",
+        message: e.response ? e.response.data : e.message,
+      });
+    }
+  });
+};
+
 module.exports = {
   createUser,
   loginUser,
@@ -212,4 +425,13 @@ module.exports = {
   deleteUser,
   getAllUser,
   getDetailsUser,
+  forgotPassword,
+  resetPassword,
+  changePassword,
+  updateUserRole,
+  updateAvatar,
+  getOrderHistory,
+  getOrderDetails,
+  getAllNews,
+  getIntroduce,
 };

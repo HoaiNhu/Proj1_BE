@@ -1,35 +1,64 @@
 const ProductService = require("../services/ProductService");
 
-//create product
+// Tạo sản phẩm mới
 const createProduct = async (req, res) => {
   try {
-    //test input data
-    const { name, image, type, price, countInStock, rating, description } =
-      req.body;
-    //console.log("req.body", req.body);
+    const {
+      productCode,
+      productName,
+      productImage,
+      productCategory,
+      productPrice,
+      productQuantity,
+      productExpiry,
+      productRating,
+      productDescription,
+    } = req.body;
 
-    if (!name || !image || !type || !price || !countInStock || !rating) {
-      //check have
+    // Kiểm tra input
+    if (
+      !productCode ||
+      !productName ||
+      !productImage ||
+      !productCategory ||
+      !productPrice ||
+      !productQuantity ||
+      !productExpiry ||
+      !productDescription
+    ) {
       return res.status(200).json({
         status: "ERR",
-        message: "The input is required",
+        message: "All fields are required",
       });
     }
 
-    const response = await ProductService.createProduct(req.body);
+    const newProduct = {
+      productCode,
+      productName,
+      productImage,
+      productCategory,
+      productPrice,
+      productQuantity,
+      productExpiry,
+      productDescription,
+      productRating: productRating || 0, // Nếu không có, mặc định 0
+    };
+
+    const response = await ProductService.createProduct(newProduct);
     return res.status(200).json(response);
   } catch (e) {
-    return res.status(404).json({
-      message: e,
+    return res.status(500).json({
+      message: e.message || "Something went wrong",
     });
   }
 };
 
-//update product
+// Cập nhật thông tin sản phẩm
 const updateProduct = async (req, res) => {
   try {
     const productId = req.params.id;
     const data = req.body;
+
     if (!productId) {
       return res.status(200).json({
         status: "ERR",
@@ -40,17 +69,16 @@ const updateProduct = async (req, res) => {
     const response = await ProductService.updateProduct(productId, data);
     return res.status(200).json(response);
   } catch (e) {
-    return res.status(404).json({
-      message: e,
+    return res.status(500).json({
+      message: e.message || "Something went wrong",
     });
   }
 };
 
-//delete product
+// Xóa sản phẩm
 const deleteProduct = async (req, res) => {
   try {
     const productId = req.params.id;
-    //const token = req.headers;
 
     if (!productId) {
       return res.status(200).json({
@@ -62,13 +90,13 @@ const deleteProduct = async (req, res) => {
     const response = await ProductService.deleteProduct(productId);
     return res.status(200).json(response);
   } catch (e) {
-    return res.status(404).json({
-      message: e,
+    return res.status(500).json({
+      message: e.message || "Something went wrong",
     });
   }
 };
 
-//get details product
+// Lấy thông tin chi tiết sản phẩm
 const getDetailsProduct = async (req, res) => {
   try {
     const productId = req.params.id;
@@ -81,23 +109,36 @@ const getDetailsProduct = async (req, res) => {
     }
 
     const response = await ProductService.getDetailsProduct(productId);
+    if (!response) {
+      return res.status(404).json({
+        status: "ERR",
+        message: "Product not found",
+      });
+    }
+
     return res.status(200).json(response);
   } catch (e) {
-    return res.status(404).json({
-      message: e,
+    return res.status(500).json({
+      message: e.message || "Something went wrong",
     });
   }
 };
 
-//get all product
+// Lấy danh sách tất cả sản phẩm
 const getAllProduct = async (req, res) => {
   try {
     const { limit, page, sort, filter } = req.query;
-    const response = await ProductService.getAllProduct(Number(limit) || 8, Number(page) || 0, sort, filter);
+
+    const response = await ProductService.getAllProduct(
+      Number(limit) || 10,
+      Number(page) || 0,
+      sort,
+      filter
+    );
     return res.status(200).json(response);
   } catch (e) {
-    return res.status(404).json({
-      message: e,
+    return res.status(500).json({
+      message: e.message || "Something went wrong",
     });
   }
 };

@@ -5,10 +5,19 @@ const { authMiddleware, authUserMiddleware } = require("../middleware/authMiddle
 
 router.post("/sign-up", userController.createUser);
 router.post("/log-in", userController.loginUser);
+router.post("/forgot-password", userController.forgotPassword);
+router.post("/reset-password", userController.resetPassword);
+router.put("/change-password", authUserMiddleware, userController.changePassword);
+router.put("/update-avatar", userController.updateAvatar);
 router.put("/update-user/:id", userController.updateUser);
 router.delete("/delete-user/:id", authMiddleware, userController.deleteUser); //xoá user
-router.get("/getAll", authMiddleware, userController.getAllUser); //lấy info user cho admin
-router.get("/get-details/:id", authUserMiddleware, userController.getDetailsUser); //lấy info user cho user
+router.get("/get-all-user", authMiddleware, userController.getAllUser); //lấy info user cho admin
+router.get("/get-detail-user/:id", authUserMiddleware, userController.getDetailsUser); //lấy info user cho user
 router.post("/refresh-token", userController.refreshToken); //cấp access token mới sau khi token cũ hết hạn dựa vào refresh token
+router.put("/update-role/:id", authMiddleware, userController.updateUserRole);
+router.get("/order-history", authUserMiddleware, userController.getOrderHistory);
+router.get("/order-details/:orderId", authUserMiddleware, userController.getOrderDetails);
+router.get("/news", userController.getAllNews);
+router.get("/introduce", userController.getIntroduce);
 
 module.exports = router;

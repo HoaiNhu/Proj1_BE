@@ -14,7 +14,7 @@ const authMiddleware = (req, res, next) => {
 
   const token = authHeader.split(" ")[1];
 
-  jwt.verify(token, process.env.ACCESS_TOKEN, (err, decoded) => {
+  jwt.verify(token, process.env.ACCESS_TOKEN, (err, user) => {
     if (err) {
       return res.status(401).json({
         status: "ERR",
@@ -23,7 +23,7 @@ const authMiddleware = (req, res, next) => {
     }
 
     // Kiểm tra quyền admin
-    if (decoded.payload?.isAdmin) {
+    if (user.payload?.isAdmin) {
       console.log("Admin authentication successful");
       next();
     } else {
