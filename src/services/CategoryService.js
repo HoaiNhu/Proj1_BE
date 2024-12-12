@@ -1,41 +1,26 @@
 const Category = require("../models/CategoryModel");
 
 //tạo Category
+//create category
 const createCategory = (newCategory) => {
   return new Promise(async (resolve, reject) => {
-    const { code, name,description } =
-    newCategory;
+    const { code, name, description } = newCategory;
 
     try {
-      //check tên category
-      const checkCategory = await Category.findOne({
-        name: name,
-      });
-      //nếu name category đã tồn tại
-      if (checkCategory !== null) {
-        resolve({
-          status: "OK",
-          message: "The name of category is already",
-        });
+      const checkCategory = await Category.findOne({ name });
+      if (checkCategory) {
+        reject({ status: "ERR", message: "Category name already exists" });
+        return;
       }
 
-      const createdCategory = await Category.create({
-        code,
-        name,
-        description,
-      });
-      if (createdCategory) {
-        resolve({
-          status: "OK",
-          message: "SUCCESS",
-          data: createdCategory,
-        });
-      }
+      const createdCategory = await Category.create({ code, name, description });
+      resolve({ status: "OK", message: "Category created successfully", data: createdCategory });
     } catch (e) {
       reject(e);
     }
   });
 };
+
 
 //update category
 const updateCategory = (id, data) => {

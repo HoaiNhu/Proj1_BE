@@ -20,7 +20,7 @@ const createCategory = async (req, res) => {
     return res.status(200).json(response);
   } catch (e) {
     return res.status(404).json({
-      message: "Name is require",
+      message: e,
     });
   }
 };
@@ -102,10 +102,12 @@ const getAllCategory = async (req, res) => {
   }
 };
 
+// Đảm bảo rằng bạn có dòng này ở cuối file CategoryController.js
 module.exports = {
   createCategory,
   updateCategory,
   deleteCategory,
   getDetailsCategory,
-  getAllCategory,
+  getAllCategory
 };
+
