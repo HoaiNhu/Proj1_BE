@@ -48,7 +48,7 @@ const createUser = async (req, res) => {
       });
     }
 
-    console.log("isValidEmail ", isValidEmail);
+    // console.log("isValidEmail ", isValidEmail);
 
     const response = await UserServices.createUser(req.body);
     return res.status(200).json(response);
@@ -62,7 +62,7 @@ const createUser = async (req, res) => {
 //đăng nhập
 const loginUser = async (req, res) => {
   try {
-    console.log(req.body);
+    // console.log(req.body);
     //test input data
     const {
       // familyName,
@@ -107,12 +107,20 @@ const loginUser = async (req, res) => {
     // console.log("isValidEmail ", isValidEmail);
 
     const response = await UserServices.loginUser(req.body);
+    const { refresh_token, ...newResponse } = response;
+
+    // console.log("response", response);
+    res.cookie("refresh_token", refresh_token, {
+      HttpOnly: true,
+      Secure: true,
+    });
+
     if (!response) {
       return res
         .status(500)
         .json({ status: "ERR", message: "Internal Server Error" });
     }
-    return res.status(200).json(response);
+    return res.status(200).json(newResponse);
   } catch (e) {
     return res.status(404).json({
       message: e,
@@ -200,10 +208,12 @@ const getDetailsUser = async (req, res) => {
 
 //cấp token mới
 const refreshToken = async (req, res) => {
-  try {
-    const token = req.headers.token?.split(" ")[1];
+  console.log("req.cookies", req.cookies);
 
-    if (!userId) {
+  try {
+    const token = req.cookies.refresh_token;
+
+    if (!token) {
       return res.status(200).json({
         status: "ERR",
         message: "The token is required",

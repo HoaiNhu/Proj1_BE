@@ -57,7 +57,7 @@ const authUserMiddleware = (req, res, next) => {
     }
 
     // Kiểm tra quyền admin hoặc user truy cập đúng tài khoản của mình
-    if (decoded.payload?.isAdmin || decoded.payload?.id === userId) {
+    if (decoded?.isAdmin || decoded.id === userId) {
       console.log("User authentication successful");
       next();
     } else {
