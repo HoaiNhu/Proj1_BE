@@ -1,35 +1,47 @@
 const CategoryService = require("../services/CategoryService");
 
-//create Category
+// Tạo sản phẩm mới
 const createCategory = async (req, res) => {
   try {
-    //test input data
-    const { code,name,description } =
-      req.body;
-    //console.log("req.body", req.body);
+    const {
+      categoryCode,
+      categoryName,
+      description,
+    } = req.body;
 
-    if (!name ) {
-      //check have
+    // Kiểm tra input
+    if (
+      !categoryCode ||
+      !categoryName ||
+      !description
+    ) {
       return res.status(200).json({
         status: "ERR",
-        message: "The input is required",
+        message: "All fields are required",
       });
     }
 
-    const response = await CategoryService.createCategory(req.body);
+    const newCategory = {
+      categoryCode,
+      categoryName,
+      description,
+    };
+
+    const response = await CategoryService.createCategory(newCategory);
     return res.status(200).json(response);
   } catch (e) {
-    return res.status(404).json({
-      message: e,
+    return res.status(500).json({
+      message: e.message || "Something went wrong",
     });
   }
 };
 
-//update Category
+// Cập nhật thông tin sản phẩm
 const updateCategory = async (req, res) => {
   try {
     const CategoryId = req.params.id;
     const data = req.body;
+
     if (!CategoryId) {
       return res.status(200).json({
         status: "ERR",
@@ -40,17 +52,16 @@ const updateCategory = async (req, res) => {
     const response = await CategoryService.updateCategory(CategoryId, data);
     return res.status(200).json(response);
   } catch (e) {
-    return res.status(404).json({
-      message: e,
+    return res.status(500).json({
+      message: e.message || "Something went wrong",
     });
   }
 };
 
-//delete Category
+// Xóa sản phẩm
 const deleteCategory = async (req, res) => {
   try {
     const CategoryId = req.params.id;
-    //const token = req.headers;
 
     if (!CategoryId) {
       return res.status(200).json({
@@ -62,13 +73,13 @@ const deleteCategory = async (req, res) => {
     const response = await CategoryService.deleteCategory(CategoryId);
     return res.status(200).json(response);
   } catch (e) {
-    return res.status(404).json({
-      message: e,
+    return res.status(500).json({
+      message: e.message || "Something went wrong",
     });
   }
 };
 
-//get details Category
+// Lấy thông tin chi tiết sản phẩm
 const getDetailsCategory = async (req, res) => {
   try {
     const CategoryId = req.params.id;
@@ -81,23 +92,36 @@ const getDetailsCategory = async (req, res) => {
     }
 
     const response = await CategoryService.getDetailsCategory(CategoryId);
+    if (!response) {
+      return res.status(404).json({
+        status: "ERR",
+        message: "Category not found",
+      });
+    }
+
     return res.status(200).json(response);
   } catch (e) {
-    return res.status(404).json({
-      message: e,
+    return res.status(500).json({
+      message: e.message || "Something went wrong",
     });
   }
 };
 
-//get all Category
+// Lấy danh sách tất cả sản phẩm
 const getAllCategory = async (req, res) => {
   try {
     const { limit, page, sort, filter } = req.query;
-    const response = await CategoryService.getAllCategory(Number(limit) || 8, Number(page) || 0, sort, filter);
+
+    const response = await CategoryService.getAllCategory(
+      Number(limit) || 10,
+      Number(page) || 0,
+      sort,
+      filter
+    );
     return res.status(200).json(response);
   } catch (e) {
-    return res.status(404).json({
-      message: e,
+    return res.status(500).json({
+      message: e.message || "Something went wrong",
     });
   }
 };
