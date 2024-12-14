@@ -6,7 +6,7 @@ const generalAccessToken = (payload) => {
   try {
     console.log("Payload for access token:", payload);
     const access_token = jwt.sign({ ...payload }, process.env.ACCESS_TOKEN, {
-      expiresIn: "30h",
+      expiresIn: "10s",
     });
     return access_token;
   } catch (error) {
@@ -40,13 +40,12 @@ const refreshTokenJwtService = (token) => {
           });
         }
 
-        const { payload } = user;
         // console.log("Payload from refresh token:", payload);
 
         try {
           const access_token = generalAccessToken({
-            id: payload?.id,
-            isAdmin: payload?.isAdmin,
+            id: user?.id,
+            isAdmin: user?.isAdmin,
           });
 
           resolve({

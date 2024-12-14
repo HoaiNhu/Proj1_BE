@@ -111,8 +111,9 @@ const loginUser = async (req, res) => {
 
     // console.log("response", response);
     res.cookie("refresh_token", refresh_token, {
-      HttpOnly: true,
-      Secure: true,
+      httpOnly: true,
+      secure: false,
+      sameSite: "Strict",
     });
 
     if (!response) {
@@ -208,7 +209,8 @@ const getDetailsUser = async (req, res) => {
 
 //cấp token mới
 const refreshToken = async (req, res) => {
-  console.log("req.cookies", req.cookies);
+  // console.log("req.cookies", req.cookies);
+  console.log("req.cookies.refresh_token", req.cookies.refresh_token);
 
   try {
     const token = req.cookies.refresh_token;
