@@ -20,13 +20,13 @@ const createProduct = (newProduct) => {
 
       // Check for duplicate productCode or productName
       const checkProduct = await Product.findOne({
-        $or: [{ productCode }, { productName }],
+        $or: [ { productName }],
       });
 
       if (checkProduct) {
         return resolve({
           status: "ERR",
-          message: "Product code or name already exists.",
+          message: "Product name already exists.",
         });
       }
 
