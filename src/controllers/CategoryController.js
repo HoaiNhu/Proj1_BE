@@ -24,7 +24,7 @@ const createCategory = async (req, res) => {
     const newCategory = {
       categoryCode,
       categoryName,
-      description,
+      
     };
 
     const response = await CategoryService.createCategory(newCategory);

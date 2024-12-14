@@ -9,7 +9,7 @@ const createCategory = (newCategory) => {
       const {
         categoryCode,
         categoryName,
-        description,
+      
       } = newCategory;
 
       // Check for duplicate CategoryCode or CategoryName
