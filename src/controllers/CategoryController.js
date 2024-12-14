@@ -6,14 +6,14 @@ const createCategory = async (req, res) => {
     const {
       categoryCode,
       categoryName,
-      description,
+      
     } = req.body;
 
     // Kiểm tra input
     if (
       !categoryCode ||
-      !categoryName ||
-      !description
+      !categoryName 
+      
     ) {
       return res.status(200).json({
         status: "ERR",
