@@ -209,7 +209,7 @@ const getDetailsUser = async (req, res) => {
 
 //cấp token mới
 const refreshToken = async (req, res) => {
-  // console.log("req.cookies", req.cookies);
+  console.log("req.cookies", req.cookies);
   console.log("req.cookies.refresh_token", req.cookies.refresh_token);
 
   try {

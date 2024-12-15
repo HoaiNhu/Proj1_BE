@@ -23,7 +23,7 @@ const authMiddleware = (req, res, next) => {
     }
 
     // Kiểm tra quyền admin
-    if (user.payload?.isAdmin) {
+    if (user?.isAdmin) {
       console.log("Admin authentication successful");
       next();
     } else {
@@ -37,6 +37,8 @@ const authMiddleware = (req, res, next) => {
 
 // Middleware xác thực cho user lấy thông tin cá nhân
 const authUserMiddleware = (req, res, next) => {
+  // console.log("req.headers", req.headers);
+
   const authHeader = req.headers.token;
   if (!authHeader) {
     return res.status(401).json({
