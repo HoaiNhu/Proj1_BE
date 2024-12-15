@@ -129,6 +129,21 @@ const loginUser = async (req, res) => {
   }
 };
 
+//đăng xuất
+const logoutUser = async (req, res) => {
+  try {
+    res.clearCookie("refresh_token");
+    return res.status(200).json({
+      status: "OK",
+      message: "Log out successfully",
+    });
+  } catch (e) {
+    return res.status(404).json({
+      message: e,
+    });
+  }
+};
+
 //update user
 const updateUser = async (req, res) => {
   try {
@@ -408,4 +423,5 @@ module.exports = {
   getOrderDetails,
   getAllNews,
   getIntroduce,
+  logoutUser,
 };
