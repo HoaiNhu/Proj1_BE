@@ -1,113 +1,106 @@
-const CategoryService = require("../services/CategoryService");
+const CategoryService = require("../services/CategoryService"); // Đảm bảo đường dẫn đúng
 
-// Tạo sản phẩm mới
+// Tạo loại bánh mới
 const createCategory = async (req, res) => {
   try {
-    const {
-      categoryCode,
-      categoryName,
-      description,
-    } = req.body;
+    const { categoryCode, categoryName } = req.body;
 
-    // Kiểm tra input
-    if (
-      !categoryCode ||
-      !categoryName ||
-      !description
-    ) {
-      return res.status(200).json({
+    // Kiểm tra dữ liệu nhập vào
+    if (!categoryCode || !categoryName) {
+      return res.status(400).json({
         status: "ERR",
-        message: "All fields are required",
+        message: "All fields are required", // Trả về lỗi nếu thiếu categoryCode hoặc categoryName
       });
     }
 
-    const newCategory = {
-      categoryCode,
-      categoryName,
-      description,
-    };
+    // Gọi service để tạo category mới
+    const response = await CategoryService.createCategory({ categoryCode, categoryName });
+    return res.status(200).json(response); // Trả về kết quả thành công
 
-    const response = await CategoryService.createCategory(newCategory);
-    return res.status(200).json(response);
   } catch (e) {
+    // Trả về lỗi nếu có exception
     return res.status(500).json({
-      message: e.message || "Something went wrong",
+      status: "ERR",
+      message: e.message || "Something went wrong", // Nếu có lỗi khác, trả về lỗi 500
     });
   }
 };
 
-// Cập nhật thông tin sản phẩm
+// Cập nhật thông tin loại bánh
 const updateCategory = async (req, res) => {
   try {
-    const CategoryId = req.params.id;
+    const categoryId = req.params.id;
     const data = req.body;
 
-    if (!CategoryId) {
-      return res.status(200).json({
+    if (!categoryId) {
+      return res.status(400).json({
         status: "ERR",
-        message: "The CategoryId is required",
+        message: "The CategoryId is required", // Kiểm tra CategoryId
       });
     }
 
-    const response = await CategoryService.updateCategory(CategoryId, data);
-    return res.status(200).json(response);
+    const response = await CategoryService.updateCategory(categoryId, data);
+    return res.status(200).json(response); // Trả về kết quả thành công
   } catch (e) {
     return res.status(500).json({
+      status: "ERR",
       message: e.message || "Something went wrong",
     });
   }
 };
 
-// Xóa sản phẩm
+// Xóa loại bánh
 const deleteCategory = async (req, res) => {
   try {
-    const CategoryId = req.params.id;
+    const categoryId = req.params.id;
 
-    if (!CategoryId) {
-      return res.status(200).json({
+    if (!categoryId) {
+      return res.status(400).json({
         status: "ERR",
-        message: "The CategoryId is required",
+        message: "The CategoryId is required", // Kiểm tra CategoryId
       });
     }
 
-    const response = await CategoryService.deleteCategory(CategoryId);
-    return res.status(200).json(response);
+    const response = await CategoryService.deleteCategory(categoryId);
+    return res.status(200).json(response); // Trả về kết quả thành công
   } catch (e) {
     return res.status(500).json({
+      status: "ERR",
       message: e.message || "Something went wrong",
     });
   }
 };
 
-// Lấy thông tin chi tiết sản phẩm
+// Lấy thông tin chi tiết loại bánh
 const getDetailsCategory = async (req, res) => {
   try {
-    const CategoryId = req.params.id;
+    const categoryId = req.params.id;
 
-    if (!CategoryId) {
-      return res.status(200).json({
+    if (!categoryId) {
+      return res.status(400).json({
         status: "ERR",
-        message: "The CategoryId is required",
+        message: "The CategoryId is required", // Kiểm tra CategoryId
       });
     }
 
-    const response = await CategoryService.getDetailsCategory(CategoryId);
+    const response = await CategoryService.getDetailsCategory(categoryId);
     if (!response) {
       return res.status(404).json({
         status: "ERR",
-        message: "Category not found",
+        message: "Category not found", // Nếu không tìm thấy category
       });
     }
 
-    return res.status(200).json(response);
+    return res.status(200).json(response); // Trả về kết quả thành công
   } catch (e) {
     return res.status(500).json({
+      status: "ERR",
       message: e.message || "Something went wrong",
     });
   }
 };
 
-// Lấy danh sách tất cả sản phẩm
+// Lấy danh sách tất cả loại bánh
 const getAllCategory = async (req, res) => {
   try {
     const { limit, page, sort, filter } = req.query;
@@ -118,9 +111,11 @@ const getAllCategory = async (req, res) => {
       sort,
       filter
     );
-    return res.status(200).json(response);
+
+    return res.status(200).json(response); // Trả về danh sách loại bánh
   } catch (e) {
     return res.status(500).json({
+      status: "ERR",
       message: e.message || "Something went wrong",
     });
   }

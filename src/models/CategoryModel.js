@@ -4,7 +4,6 @@ const categorySchema = new mongoose.Schema(
   {
     categoryCode: { type: String, required: true, unique: true },
     categoryName: { type: String, required: true },
-    description: { type: String },
     isActive: {
       type: Boolean,
       default: true, // Trạng thái (true: hoạt động, false: không hoạt động)
