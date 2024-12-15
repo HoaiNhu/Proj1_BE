@@ -4,44 +4,44 @@ const ProductService = require("../services/ProductService");
 const createProduct = async (req, res) => {
   try {
     const {
-      productCode,
+     // productCode,
       productName,
-      productImage,
       productCategory,
       productPrice,
-      productQuantity,
-      productExpiry,
-      productRating,
+      //productQuantity,
+     // productExpiry,
+     // productRating,
       productDescription,
     } = req.body;
 
+    const productImage = req.file ? req.file.path : null;
     // Kiểm tra input
     if (
-      !productCode ||
+     // !productCode ||
       !productName ||
       !productImage ||
       !productCategory ||
       !productPrice ||
-      !productQuantity ||
-      !productExpiry ||
+     // !productQuantity ||
+     // !productExpiry ||
       !productDescription
     ) {
-      return res.status(200).json({
+      return res.status(400).json({
         status: "ERR",
         message: "All fields are required",
       });
     }
 
     const newProduct = {
-      productCode,
+      //productCode,
       productName,
       productImage,
       productCategory,
       productPrice,
-      productQuantity,
-      productExpiry,
+     // productQuantity,
+     // productExpiry,
       productDescription,
-      productRating: productRating || 0, // Nếu không có, mặc định 0
+      //productRating: productRating || 0, // Nếu không có, mặc định 0
     };
 
     const response = await ProductService.createProduct(newProduct);
