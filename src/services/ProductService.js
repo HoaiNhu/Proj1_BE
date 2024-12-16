@@ -7,14 +7,14 @@ const createProduct = (newProduct) => {
   return new Promise(async (resolve, reject) => {
     try {
       const {
-        productCode,
+       //  productCode,
         productName,
         productImage,
         productCategory,
         productPrice,
-        productQuantity,
-        productExpiry,
-        productRating,
+        //productQuantity,
+       // productExpiry,
+       // productRating,
         productDescription,
       } = newProduct;
 
