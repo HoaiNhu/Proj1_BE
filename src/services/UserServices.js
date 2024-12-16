@@ -208,6 +208,7 @@ const getDetailsUser = (id) => {
         _id: id,
       });
 
+      // console.log("user", user);
       //nếu user ko tồn tại
       if (user === null) {
         resolve({

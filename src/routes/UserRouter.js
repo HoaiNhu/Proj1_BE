@@ -10,7 +10,7 @@ router.post("/forgot-password", userController.forgotPassword);
 router.post("/reset-password", userController.resetPassword);
 router.put("/change-password", authUserMiddleware, userController.changePassword);
 router.put("/update-avatar", userController.updateAvatar);
-router.put("/update-user/:id", userController.updateUser);
+router.put("/update-user/:id",authUserMiddleware, userController.updateUser);
 router.delete("/delete-user/:id", authMiddleware, userController.deleteUser); //xoá user
 router.get("/get-all-user", authMiddleware, userController.getAllUser); //lấy info user cho admin
 router.get("/get-detail-user/:id", authUserMiddleware, userController.getDetailsUser); //lấy info user cho user

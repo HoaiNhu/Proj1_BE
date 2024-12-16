@@ -35,8 +35,8 @@ const userSchema = new mongoose.Schema(
     //   default: "customer",
     //   required: true,
     // },
-    access_token: { type: String },
-    refresh_token: { type: String },
+    // access_token: { type: String },
+    // refresh_token: { type: String },
   },
   {
     timestamps: true,
