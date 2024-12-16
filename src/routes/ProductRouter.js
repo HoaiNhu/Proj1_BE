@@ -14,7 +14,8 @@ const storage = multer.diskStorage({
   });
   const upload = multer({ storage });
 
-  
+ // Cấu hình static middleware để phục vụ ảnh từ thư mục uploads
+router.use("/image", express.static(path.join(__dirname, "../uploads")));  // Cấu hình để trả ảnh từ thư mục 'uploads' 
 router.post("/create-product", upload.single("productImage"), productController.createProduct);
 router.put("/update-product/:id", productController.updateProduct);
 router.delete("/delete-product/:id", productController.deleteProduct);

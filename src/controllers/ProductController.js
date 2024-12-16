@@ -14,14 +14,12 @@ const createProduct = async (req, res) => {
       productDescription,
     } = req.body;
 
-    const productImage = req.file ? req.file.path : null;
-   
-
+    const productImage = req.file ? req.file.filename : null;
     // Kiểm tra input
     if (
      // !productCode ||
       !productName ||
-     // !productImage ||
+      !productImage ||
       !productCategory ||
       !productPrice ||
      // !productQuantity ||
