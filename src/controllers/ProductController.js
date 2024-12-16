@@ -15,11 +15,13 @@ const createProduct = async (req, res) => {
     } = req.body;
 
     const productImage = req.file ? req.file.path : null;
+   
+
     // Kiểm tra input
     if (
      // !productCode ||
       !productName ||
-      !productImage ||
+     // !productImage ||
       !productCategory ||
       !productPrice ||
      // !productQuantity ||
