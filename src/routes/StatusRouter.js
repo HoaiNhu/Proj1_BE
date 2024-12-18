@@ -13,10 +13,12 @@ router.put("/update-status/:id", authMiddleware, statusController.updateStatus);
 router.delete("/delete-status/:id", authMiddleware,  statusController.deleteStatus);
 
 // Lấy chi tiết trạng thái
-router.get("/get-detail-status/:id", statusController.getDetailsStatus);
+router.get("/get-detail-status/:id",authMiddleware, statusController.getDetailsStatus);
 
 // Lấy tất cả trạng thái (phân trang, lọc, sắp xếp)
-router.get("/get-all-status", statusController.getAllStatus);
+router.get("/get-all-status", authMiddleware, statusController.getAllStatus);
+
+router.post("/refresh-token", statusController.refreshToken);
 
 // Kiểm tra trạng thái cụ thể (cần đăng nhập)
 // router.get("/check-status/:id", authMiddleware, statusController.checkStatus);

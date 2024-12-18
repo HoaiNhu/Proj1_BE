@@ -6,7 +6,7 @@ const statusSchema = new mongoose.Schema(
       type: String,
       required: true,
       unique: true,
-      enum: ["PENDING", "PROCESSING", "DELIVERING", "COMPLETED", "CANCELLED"],
+      // enum: ["PENDING", "PROCESSING", "DELIVERING", "COMPLETED", "CANCELLED"],
     },
     statusName: { type: String, required: true },
     statusDescription: { 

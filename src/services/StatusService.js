@@ -3,35 +3,50 @@ const Status = require("../models/StatusModel");
 //tạo Status
 const createStatus = (newStatus) => {
   return new Promise(async (resolve, reject) => {
-    const { statusCode, statusName } =
-    newStatus;
+    const { statusCode, statusName, statusDescription } = newStatus;
 
     try {
       //check tên Status
       const checkStatus = await Status.findOne({
-        name: statusName,
+        code: statusCode,
       });
       //nếu name Status đã tồn tại
+
       if (checkStatus !== null) {
         resolve({
           status: "OK",
-          message: "The name of Status is already",
+          message: "The status code is already registered",
         });
       }
 
       const createdStatus = await Status.create({
         statusCode,
         statusName,
+        statusDescription,
       });
+
+      // console.log("createdStatus", createdStatus);
+
       if (createdStatus) {
         resolve({
           status: "OK",
-          message: "SUCCESS",
+          message: "Status successfully created",
           data: createdStatus,
         });
       }
     } catch (e) {
-      reject(e);
+      if (e.code === 11000) {
+        reject({
+          status: "ERR",
+          message: "The status code or name is already registered",
+        });
+      } else {
+        reject({
+          status: "ERR",
+          message: "An error occurred while creating the status",
+          error: e.message,
+        });
+      }
     }
   });
 };
@@ -74,10 +89,8 @@ const deleteStatus = (id) => {
   return new Promise(async (resolve, reject) => {
     try {
       //check Status created
-      const checkStatus = await Status.findOne({
-        _id: id,
-      });
-      //console.log("checkStatus", checkStatus);
+      const checkStatus = await Status.findById({ _id: id });
+      // console.log("checkStatus", checkStatus);
 
       //nếu Status ko tồn tại
       if (checkStatus === null) {
@@ -99,76 +112,42 @@ const deleteStatus = (id) => {
   });
 };
 
-// //get details Status
-// const getDetailsStatus = (id) => {
-//   return new Promise(async (resolve, reject) => {
-//     try {
-//       //check email created
-//       const Status = await Status.findOne({
-//         _id: id,
-//       });
-
-//       //nếu Status ko tồn tại
-//       if (Status === null) {
-//         resolve({
-//           status: "OK",
-//           message: "The Status is not defined",
-//         });
-//       }
-
-//       resolve({
-//         status: "OK",
-//         message: "SUCCESS",
-//         data: Status,
-//       });
-//     } catch (e) {
-//       reject(e);
-//     }
-//   });
-// };
-
-//get all Status
-const getAllStatus = (limit, page, sort, filter) => {
+//get details Status
+const getDetailsStatus = (id) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const totalStatus = await Status.countDocuments();
-      
-      if(filter){
-        const label = filter[0];
-        const allStatusFilter = await Status.find({ [label]: {'$regex': filter[1] } }).limit(limit).skip(page * limit) //filter gần đúng
+      const status = await Status.findOne({ _id: id });
+
+      // console.log("status", status)
+
+      if (!status) {
+        resolve({
+          status: "ERR",
+          message: "The Status is not defined",
+        });
+      } else {
         resolve({
           status: "OK",
-          message: "Get all Status IS SUCCESS",
-          data: allStatusFilter,
-          total: totalStatus,
-          pageCurrent: Number(page + 1),
-          totalPage: Math.ceil(totalStatus / limit),
+          message: "SUCCESS",
+          data: status,
         });
       }
+    } catch (e) {
+      reject(e);
+    }
+  });
+};
 
-      if(sort){
-        const objectSort = {};
-        objectSort[sort[1]] = sort[0];
-        //console.log('objectSort', objectSort)
-        const allStatusSort = await Status.find().limit(limit).skip(page * limit).sort(objectSort);
-        resolve({
-          status: "OK",
-          message: "Get all Status IS SUCCESS",
-          data: allStatusSort,
-          total: totalStatus,
-          pageCurrent: Number(page + 1),
-          totalPage: Math.ceil(totalStatus / limit),
-        });
-      }
-
-      const allStatus = await Status.find().limit(limit).skip(page * limit);
+//get all Status
+//get all Status
+const getAllStatus = () => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const allStatus = await Status.find(); // Lấy tất cả dữ liệu từ collection
       resolve({
         status: "OK",
         message: "Get all Status IS SUCCESS",
         data: allStatus,
-        total: totalStatus,
-        pageCurrent: Number(page + 1),
-        totalPage: Math.ceil(totalStatus / limit),
       });
     } catch (e) {
       reject(e);
@@ -180,6 +159,6 @@ module.exports = {
   createStatus,
   updateStatus,
   deleteStatus,
- // getDetailsStatus,
+  getDetailsStatus,
   getAllStatus,
 };
