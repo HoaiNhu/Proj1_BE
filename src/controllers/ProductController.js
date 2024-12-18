@@ -1,3 +1,4 @@
+const Product = require("../models/ProductModel");
 const ProductService = require("../services/ProductService");
 
 // Tạo sản phẩm mới
@@ -8,18 +9,21 @@ const createProduct = async (req, res) => {
       productName,
       productCategory,
       productPrice,
+      
       //productQuantity,
      // productExpiry,
      // productRating,
       productDescription,
     } = req.body;
 
-    const productImage = req.file ? req.file.filename : null;
+    
+  
+    
     // Kiểm tra input
     if (
      // !productCode ||
       !productName ||
-      !productImage ||
+      
       !productCategory ||
       !productPrice ||
      // !productQuantity ||
@@ -32,12 +36,24 @@ const createProduct = async (req, res) => {
       });
     }
 
+    let productImageUrl = "";
+
+    // Kiểm tra và upload ảnh lên Cloudinary nếu có
+    if (req.file) {
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: "product_images", // Thư mục lưu trữ trên Cloudinary
+      });
+      productImageUrl = result.secure_url; // Lấy URL ảnh từ Cloudinary
+    }
+
+     
+
     const newProduct = {
       //productCode,
       productName,
-      productImage,
       productCategory,
       productPrice,
+      productImage: productImageUrl,
      // productQuantity,
      // productExpiry,
       productDescription,

@@ -3,7 +3,11 @@ const productSchema = new mongoose.Schema(
   {
     //productCode: { type: String, required: true },
     productName: { type: String, required: true, unique: true },
-    productImage: { type: String, required: true }, //Link ảnh
+    productImage: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "productImage",
+      required: true,},
+      
     productCategory: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Category",
