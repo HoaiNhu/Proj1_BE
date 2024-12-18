@@ -2,22 +2,9 @@ const express = require("express");
 const router = express.Router();
 const productController = require("../controllers/ProductController");
 const { authMiddleware } = require("../middleware/authMiddleware");
-const multer = require("multer");
-const path = require("path");
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-      cb(null, "uploads/"); // Thư mục lưu file
-    },
-    filename: (req, file, cb) => {
-      cb(null, Date.now() + path.extname(file.originalname)); // Tạo tên file duy nhất
-    },
-  });
-  const upload = multer({ storage });
 
- // Cấu hình static middleware để phục vụ ảnh từ thư mục uploads
-router.use("/image", express.static(path.join(__dirname, "../uploads")));  // Cấu hình để trả ảnh từ thư mục 'uploads' 
-router.post("/create-product", upload.single("productImage"), productController.createProduct);
-router.put("/update-product/:id", productController.updateProduct);
+router.post("/create-product",authMiddleware,  productController.createProduct);
+router.put("/update-product/:id",authMiddleware, productController.updateProduct);
 router.delete("/delete-product/:id", productController.deleteProduct);
 router.get("/get-detail-product/:id", productController.getDetailsProduct);
 router.get("/get-all-product", productController.getAllProduct);
