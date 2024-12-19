@@ -4,7 +4,9 @@ dotenv.config();
 
 // Middleware xác thực cho admin
 const authMiddleware = (req, res, next) => {
+  //console.log("req", req);
   const authHeader = req.headers.token;
+  //console.log("AUTH", authHeader);
   if (!authHeader) {
     return res.status(401).json({
       status: "ERR",

@@ -4,9 +4,10 @@ const productImageService = require("../services/productImageService");
 //create productImage
 
 const createProductImg = async(req, res) => {
+  console.log("req.file", req.body);
     try {
-        console.log("req.file", req.file); // Thông tin file upload
-        if (!req.file) {
+         // Thông tin file upload
+        if (!req.body) {
           return res.status(400).json({
             status: "ERR",
             message: "The file input is required",
@@ -14,7 +15,7 @@ const createProductImg = async(req, res) => {
         }
     
         // Giả sử bạn muốn trả về đường dẫn file sau khi upload
-        const filePath = req.file.path;
+        const filePath = req.body;
     
         return res.status(200).json({
           status: "OK",

@@ -3,18 +3,15 @@ const productSchema = new mongoose.Schema(
   {
     //productCode: { type: String, required: true },
     productName: { type: String, required: true, unique: true },
-    productImage: {
+    productPrice: { type: Number, required: true },
+    productImage: {type: String, require: true },
+    productCategory:{
       type: mongoose.Schema.Types.ObjectId,
       ref: "productImage",
       required: true,},
-      
-    productCategory: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Category",
-      required: true,
-    },
-    productPrice: { type: Number, required: true },
-    // productQuantity: { type: Number, required: true }, //số lượng sp
+      productSize: {type: Number, require: true },
+   
+   // productQuantity: { type: Number, required: true }, //số lượng sp
     // productExpiry: { type: Date, required: true }, //hạn sd
     // productRating: { type: Number, required: false },
     productDescription: { type: String, required: true },

@@ -1,62 +1,66 @@
 const Product = require("../models/ProductModel");
 const ProductService = require("../services/ProductService");
+const uploadCloudinary= require("../Helper/UploadCloudinary")
 
 // Tạo sản phẩm mới
 const createProduct = async (req, res) => {
+  
+ 
+  // Lấy body của request
+  const { body } = req;
+  console.log("body", body); // In ra đối tượng body
+  
   try {
     const {
      // productCode,
       productName,
-      productCategory,
       productPrice,
-      
+      productCategory,
+      productSize,
       //productQuantity,
      // productExpiry,
      // productRating,
       productDescription,
     } = req.body;
 
+    if (
+      // !productCode ||
+       !productName ||
+       !productPrice ||
+       !req.file||
+       !productCategory ||
+       !productSize ||
+      // !productQuantity ||
+      // !productExpiry ||
+       !productDescription
+     ) 
     
-  
+     {
+       
+       return res.status(400).json({
+         status: "ERR",
+         message: "All fields are required",
+       });
+     }
+     const productImage= req.file.path;
+    
+    //console.log("req1233", req.body)
     
     // Kiểm tra input
-    if (
-     // !productCode ||
-      !productName ||
-      
-      !productCategory ||
-      !productPrice ||
-     // !productQuantity ||
-     // !productExpiry ||
-      !productDescription
-    ) {
-      return res.status(400).json({
-        status: "ERR",
-        message: "All fields are required",
-      });
-    }
-
-    let productImageUrl = "";
-
-    // Kiểm tra và upload ảnh lên Cloudinary nếu có
-    if (req.file) {
-      const result = await cloudinary.uploader.upload(req.file.path, {
-        folder: "product_images", // Thư mục lưu trữ trên Cloudinary
-      });
-      productImageUrl = result.secure_url; // Lấy URL ảnh từ Cloudinary
-    }
-
-     
+   
 
     const newProduct = {
       //productCode,
       productName,
-      productCategory,
       productPrice,
-      productImage: productImageUrl,
+      productImage,
+      productCategory,
+      productSize,
+      productDescription,
+    
      // productQuantity,
      // productExpiry,
-      productDescription,
+    
       //productRating: productRating || 0, // Nếu không có, mặc định 0
     };
 
