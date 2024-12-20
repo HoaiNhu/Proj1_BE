@@ -197,6 +197,19 @@ const getAllUser = (limit = 4, page = 0) => {
       reject(e);
     }
   });
+
+  // return new Promise(async (resolve, reject) => {
+  //   try {
+  //     const allUser = await User.find(); // Lấy tất cả dữ liệu từ collection
+  //     resolve({
+  //       status: "OK",
+  //       message: "Get all User IS SUCCESS",
+  //       data: allUser,
+  //     });
+  //   } catch (e) {
+  //     reject(e);
+  //   }
+  // });
 };
 
 //get details user

@@ -8,6 +8,8 @@ const userSchema = new mongoose.Schema(
     userPassword: { type: String, required: true },
     userConfirmPassword: { type: String, required: true },
     userAddress: {
+      type: String,
+      required: false,
       ward: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Ward", // Liên kết đến model Ward
