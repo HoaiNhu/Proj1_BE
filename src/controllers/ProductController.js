@@ -99,14 +99,17 @@ const updateProduct = async (req, res) => {
 const deleteProduct = async (req, res) => {
   try {
     const productId = req.params.id;
-
+    console.log("ID", productId)
     if (!productId) {
       return res.status(200).json({
         status: "ERR",
         message: "The productId is required",
       });
+      
     }
-
+    // const imagePublicId = product.productImage.split("/").pop().split(".")[0]; // Assuming image URL follows Cloudinary format
+    // await cloudinary.uploader.destroy(imagePublicId);
+    // console.log("IMG", imagePublicId)
     const response = await ProductService.deleteProduct(productId);
     return res.status(200).json(response);
   } catch (e) {
@@ -150,8 +153,8 @@ const getAllProduct = async (req, res) => {
     const { limit, page, sort, filter } = req.query;
 
     const response = await ProductService.getAllProduct(
-      Number(limit) || 10,
-      Number(page) || 0,
+      Number(limit),
+      Number(page) ,
       sort,
       filter
     );
