@@ -77,8 +77,9 @@ const createProduct = async (req, res) => {
 const updateProduct = async (req, res) => {
   try {
     const productId = req.params.id;
+    console.log("ID",productId)
     const data = req.body;
-
+    console.log("data", data);
     if (!productId) {
       return res.status(200).json({
         status: "ERR",
