@@ -21,10 +21,10 @@ const orderSchema = new mongoose.Schema(
     // Địa chỉ giao hàng
     shippingAddress: {
       fullName: { type: String, required: true },
-      address: { type: String, required: true },
-      ward: { type: mongoose.Schema.Types.ObjectId, ref: "Ward", required: true },
-      district: { type: mongoose.Schema.Types.ObjectId, ref: "District", required: true },
-      city: { type: mongoose.Schema.Types.ObjectId, ref: "City", required: true },
+      address: { type: String, required: false }, // Địa chỉ chi tiết
+      ward: { type: String, required: false }, // Xã/Phường
+      district: { type: String, required: false }, // Quận/Huyện
+      city: { type: String, required: false }, // Tỉnh/Thành phố
       phone: { type: String, required: true },
     },
 
@@ -35,7 +35,11 @@ const orderSchema = new mongoose.Schema(
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
 
     // Trạng thái đơn hàng
-    status: { type: mongoose.Schema.Types.ObjectId, ref: "Status", required: true },
+    status: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Status",
+      required: true,
+    },
 
     // Các giá trị thanh toán
     shippingPrice: { type: Number, required: true, default: 30000 }, // Phí vận chuyển cố định

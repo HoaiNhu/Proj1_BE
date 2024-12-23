@@ -1,5 +1,14 @@
 const Order = require("../models/OrderModel");
 
+// Kiểm tra tồn tại đơn hàng
+const checkOrderExistence = async (id) => {
+  const existingOrder = await Order.findById(id);
+  if (!existingOrder) {
+    throw new Error("Order not found");
+  }
+  return existingOrder;
+};
+
 // Tạo đơn hàng mới
 const createOrder = (newOrder) => {
   return new Promise(async (resolve, reject) => {
@@ -22,13 +31,7 @@ const createOrder = (newOrder) => {
 const updateOrder = (id, data) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const existingOrder = await Order.findById(id);
-      if (!existingOrder) {
-        resolve({
-          status: "ERR",
-          message: "Order not found",
-        });
-      }
+      await checkOrderExistence(id); // Kiểm tra tồn tại
 
       const updatedOrder = await Order.findByIdAndUpdate(id, data, {
         new: true,
@@ -48,13 +51,7 @@ const updateOrder = (id, data) => {
 const deleteOrder = (id) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const existingOrder = await Order.findById(id);
-      if (!existingOrder) {
-        resolve({
-          status: "ERR",
-          message: "Order not found",
-        });
-      }
+      await checkOrderExistence(id); // Kiểm tra tồn tại
 
       await Order.findByIdAndDelete(id);
       resolve({
@@ -94,22 +91,47 @@ const getOrderDetails = (id) => {
 };
 
 // Lấy danh sách tất cả đơn hàng
-const getAllOrders = () => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const orders = await Order.find()
-        .populate("orderItems.product")
-        .populate("user")
-        .populate("status");
-      resolve({
-        status: "OK",
-        message: "All orders retrieved successfully",
-        data: orders,
-      });
-    } catch (e) {
-      reject(e);
-    }
-  });
+// const getAllOrders = () => {
+//   return new Promise(async (resolve, reject) => {
+//     try {
+//       const orders = await Order.find()
+//         .populate("orderItems.product")
+//         .populate("user")
+//         .populate("status");
+//       resolve({
+//         status: "OK",
+//         message: "All orders retrieved successfully",
+//         data: orders,
+//       });
+//     } catch (e) {
+//       reject(e);
+//     }
+//   });
+// };
+
+// Lấy danh sách tất cả đơn hàng (có phân trang và sắp xếp)
+const getAllOrders = async (
+  limit = 10,
+  page = 0,
+  sort = "-createdAt",
+  filter = {}
+) => {
+  const orders = await Order.find(filter)
+    .sort(sort)
+    .skip(page * limit)
+    .limit(limit)
+    .populate("orderItems.product")
+    .populate("user")
+    .populate("status");
+  const totalOrders = await Order.countDocuments(filter);
+  return {
+    status: "OK",
+    message: "All orders retrieved successfully",
+    data: orders,
+    totalOrders,
+    currentPage: page,
+    totalPages: Math.ceil(totalOrders / limit),
+  };
 };
 
 // Lấy danh sách đơn hàng của người dùng
@@ -134,14 +156,7 @@ const getOrdersByUser = (userId) => {
 const updateOrderStatus = (id, statusData) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const existingOrder = await Order.findById(id);
-      if (!existingOrder) {
-        resolve({
-          status: "ERR",
-          message: "Order not found",
-        });
-      }
-
+      await checkOrderExistence(id); // Kiểm tra tồn tại
       const updatedOrder = await Order.findByIdAndUpdate(
         id,
         { status: statusData },

@@ -8,27 +8,32 @@ const userSchema = new mongoose.Schema(
     userPassword: { type: String, required: true },
     userConfirmPassword: { type: String, required: true },
     userAddress: {
-      type: String,
-      required: false,
-      ward: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Ward", // Liên kết đến model Ward
-        // required: true,
-        required: false,
-      },
-      district: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "District", // Liên kết đến model District
-        // required: true,
-        required: false,
-      },
-      city: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "City", // Liên kết đến model City
-        // required: true,
-        required: false,
-      },
+      address: { type: String, required: false }, // Địa chỉ chi tiết
+      ward: { type: String, required: false }, // Xã/Phường
+      district: { type: String, required: false }, // Quận/Huyện
+      city: { type: String, required: false }, // Tỉnh/Thành phố
+      // type: String,
+      // required: false,
+      // ward: {
+      //   type: mongoose.Schema.Types.ObjectId,
+      //   ref: "Ward", // Liên kết đến model Ward
+      //   // required: true,
+      //   required: false,
+      // },
+      // district: {
+      //   type: mongoose.Schema.Types.ObjectId,
+      //   ref: "District", // Liên kết đến model District
+      //   // required: true,
+      //   required: false,
+      // },
+      // city: {
+      //   type: mongoose.Schema.Types.ObjectId,
+      //   ref: "City", // Liên kết đến model City
+      //   // required: true,
+      //   required: false,
+      // },
     },
+
     userImage: { type: String, required: false },
     isAdmin: { type: Boolean, default: false, required: true },
     // userRole: {
