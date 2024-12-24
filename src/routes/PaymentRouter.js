@@ -4,7 +4,7 @@ const paymentController = require("../controllers/PaymentController");
 const { authMiddleware, isAdminMiddleware } = require("../middleware/authMiddleware");
 
 // Tạo mới Payment (chỉ Admin)
-router.post("/create-payment", authMiddleware, isAdminMiddleware, paymentController.createPayment);
+router.post("/create-payment", isAdminMiddleware, paymentController.createPayment);
 
 // Cập nhật Payment (chỉ Admin)
 router.put("/update-payment/:id", authMiddleware, isAdminMiddleware, paymentController.updatePayment);
