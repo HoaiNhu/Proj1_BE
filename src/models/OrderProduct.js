@@ -51,6 +51,7 @@ const orderSchema = new mongoose.Schema(
     paidAt: { type: Date },
     isDelivered: { type: Boolean, default: false },
     deliveredAt: { type: Date },
+    orderNote: { type: String, required: false },// Ghi chú đơn hàng
   },
   {
     timestamps: true, // Tự động thêm createdAt và updatedAt
