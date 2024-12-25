@@ -4,13 +4,13 @@ const orderController = require("../controllers/OrderController");
 const { authMiddleware } = require("../middleware/authMiddleware");
 
 // Tạo đơn hàng mới
-router.post("/create-order", authMiddleware, orderController.createOrder);
+router.post("/create-order", orderController.createOrder);
 
 // Cập nhật thông tin đơn hàng
-router.put("/update-order/:id", authMiddleware, orderController.updateOrder);
+router.put("/update-order/:id", orderController.updateOrder);
 
 // Xóa đơn hàng
-router.delete("/delete-order/:id", authMiddleware, orderController.deleteOrder);
+router.delete("/delete-order/:id", orderController.deleteOrder);
 
 // Lấy thông tin chi tiết đơn hàng
 router.get("/get-detail-order/:id", orderController.getOrderDetails);

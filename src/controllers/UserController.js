@@ -15,6 +15,9 @@ const createUser = async (req, res) => {
       userPassword,
       userConfirmPassword,
       userAddress,
+      userWard,
+      userDistrict,
+      userCity,
       userImage,
       isAdmin,
     } = req.body;

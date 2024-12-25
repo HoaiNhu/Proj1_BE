@@ -13,6 +13,9 @@ const createUser = (newUser) => {
       userPassword,
       userConfirmPassword,
       userAddress,
+      userWard,
+      userDistrict,
+      userCity,
       userImage,
       isAdmin,
     } = newUser;
@@ -47,6 +50,9 @@ const createUser = (newUser) => {
         userPassword: hashedPassword,
         userConfirmPassword,
         userAddress,
+        userWard,
+        userDistrict,
+        userCity,
         userImage,
         isAdmin,
       });
