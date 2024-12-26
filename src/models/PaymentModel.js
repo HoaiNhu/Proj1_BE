@@ -37,8 +37,8 @@ const paymentSchema = new mongoose.Schema(
       type: String,
       required: true, // Hình ảnh (QR code hoặc logo) ngân hàng admin
     },
-    order: {
-      type: mongoose.Schema.Types.ObjectId,
+    orderCode: {
+      type: mongoose.Schema.Types.String,
       ref: "Order", // Liên kết với đơn hàng
       required: true,
     },

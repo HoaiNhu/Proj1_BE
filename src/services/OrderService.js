@@ -1,4 +1,5 @@
 const Order = require("../models/OrderModel");
+const Status = require("../models/StatusModel");
 
 // Kiểm tra tồn tại đơn hàng
 const checkOrderExistence = async (id) => {
@@ -10,19 +11,128 @@ const checkOrderExistence = async (id) => {
 };
 
 // Tạo đơn hàng mới
-const createOrder = (newOrder) => {
+// const createOrder = (newOrder) => {
+//   return new Promise(async (resolve, reject) => {
+//     try {
+//       const createdOrder = await Order.create(newOrder);
+//       if (createdOrder) {
+//         resolve({
+//           status: "OK",
+//           message: "Order created successfully",
+//           data: createdOrder,
+//         });
+//       }
+//     } catch (e) {
+//       reject(e);
+//     }
+//   });
+// };
+
+const createOrder = async (orderData) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const createdOrder = await Order.create(newOrder);
-      if (createdOrder) {
-        resolve({
-          status: "OK",
-          message: "Order created successfully",
-          data: createdOrder,
+      const {
+        orderItems,
+        shippingAddress,
+        paymentMethod,
+        shippingPrice = 30000,
+        userId,
+        deliveryDate,
+        deliveryTime,
+        orderNote = "",
+        status = "PENDING",
+      } = orderData;
+
+      // Tính toán các giá trị tổng
+      const totalItemPrice = orderItems.reduce(
+        (sum, item) => sum + item.total,
+        0
+      );
+      const totalPrice = totalItemPrice + shippingPrice;
+
+      // Kiểm tra dữ liệu
+      if (!orderItems || orderItems.length === 0) {
+        return reject({
+          status: "ERR",
+          message: "Order items cannot be empty",
         });
       }
-    } catch (e) {
-      reject(e);
+
+      // Validate order items details
+      orderItems.forEach((item) => {
+        if (!item.product) {
+          return reject({
+            status: "ERR",
+            message: "Product is required in order items",
+          });
+        }
+        if (!item.total || isNaN(item.total)) {
+          return reject({
+            status: "ERR",
+            message: "Total is required and must be a number in order items",
+          });
+        }
+      });
+
+      if (!userId) {
+        // Trường hợp khách chưa đăng nhập
+        if (
+          !shippingAddress ||
+          !shippingAddress.familyName ||
+          !shippingAddress.userName ||
+          !shippingAddress.userPhone ||
+          !shippingAddress.userEmail ||
+          !shippingAddress.userAddress
+        ) {
+          return reject({
+            status: "ERR",
+            message: "Shipping information is required for guest orders.",
+          });
+        }
+      }
+
+      if (!paymentMethod) {
+        return reject({
+          status: "ERR",
+          message: "Payment method is required",
+        });
+      }
+
+      // Lấy ObjectId của trạng thái
+      const statusObj = await Status.findOne({ statusCode: status });
+      if (!statusObj) {
+        return reject({
+          status: "ERR",
+          message: `Status ${status} not found`,
+        });
+      }
+
+      // Tạo đơn hàng
+      const newOrder = await Order.create({
+        orderCode: `ORD-${Date.now()}`,
+        orderItems,
+        shippingAddress,
+        paymentMethod,
+        userId: userId || null,
+        shippingPrice,
+        totalItemPrice,
+        totalPrice,
+        deliveryDate,
+        deliveryTime,
+        status: statusObj._id,
+        orderNote,
+      });
+
+      resolve({
+        status: "OK",
+        message: "Order created successfully",
+        data: newOrder,
+      });
+    } catch (error) {
+      reject({
+        status: "ERR",
+        message: error.message || "An error occurred while creating the order",
+      });
     }
   });
 };

@@ -22,77 +22,102 @@ const OrderService = require("../services/OrderService");
 //   }
 // };
 
+// const createOrder = async (req, res) => {
+//   try {
+//     const {
+//       orderItems,
+//       shippingAddress,
+//       paymentMethod,
+//       shippingPrice = 30000, // Giá trị mặc định nếu không được truyền
+//       userId,
+//       deliveryDate,
+//       deliveryTime,
+//       orderNote = "", // Ghi chú mặc định
+//     } = req.body;
+
+//     // Tính toán các giá trị tổng
+//     const totalItemPrice = orderItems.reduce(
+//       (sum, item) => sum + item.total,
+//       0
+//     ); // Tổng tiền hàng
+//     const totalPrice = totalItemPrice + shippingPrice; // Tổng thanh toán
+
+//     // Kiểm tra dữ liệu
+//     if (!orderItems || orderItems.length === 0) {
+//       console.log("orderItems", orderItems);
+//       return res.status(400).json({
+//         status: "ERR",
+//         message: "Order items cannot be empty",
+//       });
+//     }
+//     if (!userId) {
+//       // Người dùng chưa đăng nhập, kiểm tra thông tin giao hàng
+//       if (
+//         !shippingAddress ||
+//         !shippingAddress.familyName ||
+//         !shippingAddress.userName ||
+//         !shippingAddress.userPhone ||
+//         !shippingAddress.userEmail ||
+//         !shippingAddress.userAddress
+//       ) {
+//         return res.status(400).json({
+//           status: "ERR",
+//           message: "Shipping information is required for guest orders.",
+//         });
+//       }
+//     }
+
+//     if (!paymentMethod) {
+//       return res.status(400).json({
+//         status: "ERR",
+//         message: "Payment method is required",
+//       });
+//     }
+//     // if (!user) {
+//     //   return res.status(400).json({
+//     //     status: "ERR",
+//     //     message: "User is required",
+//     //   });
+//     // }
+
+//     // Tạo đơn hàng
+//     const newOrder = await Order.create({
+//       orderCode: `ORD-${Date.now()}`, // Tạo mã đơn hàng duy nhất
+//       orderItems,
+//       shippingAddress,
+//       paymentMethod,
+//       userId: userId || null, // Nếu không có userId thì để null
+//       shippingPrice,
+//       totalItemPrice,
+//       totalPrice,
+//       deliveryDate,
+//       deliveryTime,
+//       status: "PENDING", // Trạng thái mặc định là đang chờ
+//       orderNote, // Ghi chú đơn hàng nếu có
+//     });
+
+//     // Trả về phản hồi
+//     res.status(201).json({
+//       status: "OK",
+//       message: "Order created successfully",
+//       data: newOrder,
+//     });
+//   } catch (error) {
+//     console.error("Error in createOrder:", error);
+//     res.status(500).json({
+//       status: "ERR",
+//       message: error.message || "Internal server error",
+//     });
+//   }
+// };
+
 const createOrder = async (req, res) => {
   try {
-    const {
-      orderItems,
-      shippingAddress,
-      paymentMethod,
-      shippingPrice = 30000, // Giá trị mặc định nếu không được truyền
-      user,
-      orderNote = "", // Ghi chú mặc định
-    } = req.body;
-
-    // Tính toán các giá trị tổng
-    const totalItemPrice = orderItems.reduce(
-      (sum, item) => sum + item.total,
-      0
-    ); // Tổng tiền hàng
-    const totalPrice = totalItemPrice + shippingPrice; // Tổng thanh toán
-
-    // Kiểm tra dữ liệu
-    if (!orderItems || orderItems.length === 0) {
-      return res.status(400).json({
-        status: "ERR",
-        message: "Order items cannot be empty",
-      });
-    }
-    if (
-      !shippingAddress ||
-      !shippingAddress.fullName ||
-      !shippingAddress.phone
-    ) {
-      return res.status(400).json({
-        status: "ERR",
-        message: "Shipping address must include fullName and phone",
-      });
-    }
-    if (!paymentMethod) {
-      return res.status(400).json({
-        status: "ERR",
-        message: "Payment method is required",
-      });
-    }
-    if (!user) {
-      return res.status(400).json({
-        status: "ERR",
-        message: "User is required",
-      });
-    }
-
-    // Tạo đơn hàng
-    const newOrder = await Order.create({
-      orderCode: `ORD-${Date.now()}`, // Tạo mã đơn hàng duy nhất
-      orderItems,
-      shippingAddress,
-      paymentMethod,
-      user,
-      shippingPrice,
-      totalItemPrice,
-      totalPrice,
-      status: "Pending", // Trạng thái mặc định là đang chờ
-      orderNote, // Ghi chú đơn hàng nếu có
-    });
-
-    // Trả về phản hồi
-    res.status(201).json({
-      status: "OK",
-      message: "Order created successfully",
-      data: newOrder,
-    });
+    const response = await OrderService.createOrder(req.body);
+    return res.status(201).json(response);
   } catch (error) {
     console.error("Error in createOrder:", error);
-    res.status(500).json({
+    return res.status(500).json({
       status: "ERR",
       message: error.message || "Internal server error",
     });
