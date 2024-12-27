@@ -167,10 +167,33 @@ const getAllProduct = async (req, res) => {
   }
 };
 
+// Tìm kiếm sản phẩm
+const searchProducts = async (req, res) => {
+  try {
+    const { search } = req.query; // Lấy từ khóa tìm kiếm từ query parameters
+    if (!search) {
+      return res.status(400).json({
+        status: "ERR",
+        message: "Search query is required",
+      });
+    }
+
+    const response = await ProductService.searchProducts(search); // Gọi hàm searchProducts từ ProductService
+    return res.status(200).json(response);
+  } catch (e) {
+    return res.status(500).json({
+      message: e.message || "Something went wrong",
+    });
+  }
+};
+
+
 module.exports = {
   createProduct,
   updateProduct,
   deleteProduct,
   getDetailsProduct,
   getAllProduct,
+  searchProducts, // Thêm phương thức tìm kiếm
 };
+

@@ -193,10 +193,48 @@ const getAllProduct = (limit, page, sort, filter) => {
   });
 };
 
+/**
+ * Search for products by name
+ */
+const searchProducts = async (query) => {
+  try {
+    if (!query) {
+      throw {
+        status: "ERR",
+        message: "Search query is required",
+      };
+    }
+
+    const products = await Product.find({
+      productName: { $regex: query, $options: "i" }, // Case-insensitive partial match
+    });
+
+    if (products.length === 0) {
+      return {
+        status: "ERR",
+        message: "No matching products found",
+      };
+    }
+
+    return {
+      status: "OK",
+      message: "Products retrieved successfully",
+      data: products,
+    };
+  } catch (e) {
+    console.error("Error searching products:", e);
+    throw {
+      status: "ERR",
+      message: e.message || "Failed to search products",
+    };
+  }
+};
+
 module.exports = {
   createProduct,
   updateProduct,
   deleteProduct,
   getDetailsProduct,
   getAllProduct,
+  searchProducts
 };

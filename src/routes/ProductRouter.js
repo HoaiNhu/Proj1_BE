@@ -11,4 +11,5 @@ router.put("/update-product/:id",authMiddleware,uploadCloudinary.single('product
 router.delete("/delete-product/:id", productController.deleteProduct);
 router.get("/get-detail-product/:id", productController.getDetailsProduct);
 router.get("/get-all-product", productController.getAllProduct);
+router.get("/search", productController.searchProducts);
 module.exports = router;
