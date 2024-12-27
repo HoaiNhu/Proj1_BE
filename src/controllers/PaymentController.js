@@ -4,11 +4,20 @@ const PaymentService = require("../services/PaymentService");
 const createPayment = async (req, res) => {
   try {
     //test input data
-    const { paymentCode, paymentName, paymentMethod, userBank, userBankNumber, adminBank,  adminBankNumber, adminBankImage, order  } =
-      req.body;
+    const {
+      paymentCode,
+      paymentName,
+      paymentMethod,
+      userBank,
+      userBankNumber,
+      // adminBank,
+      // adminBankNumber,
+      // adminBankImage,
+      orderId,
+    } = req.body;
     //console.log("req.body", req.body);
 
-    if (! paymentCode|| paymentName|| paymentMethod|| userBank|| userBankNumber|| adminBank||  adminBankNumber|| adminBankImage|| order ) {
+    if (!userBank || !userBankNumber || !orderId) {
       //check have
       return res.status(200).json({
         status: "ERR",
@@ -93,7 +102,12 @@ const getDetailsPayment = async (req, res) => {
 const getAllPayment = async (req, res) => {
   try {
     const { limit, page, sort, filter } = req.query;
-    const response = await PaymentService.getAllPayment(Number(limit) || 8, Number(page) || 0, sort, filter);
+    const response = await PaymentService.getAllPayment(
+      Number(limit) || 8,
+      Number(page) || 0,
+      sort,
+      filter
+    );
     return res.status(200).json(response);
   } catch (e) {
     return res.status(404).json({

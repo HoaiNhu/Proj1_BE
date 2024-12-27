@@ -1,42 +1,53 @@
 const Payment = require("../models/PaymentModel");
+const Order = require("../models/OrderModel");
 
 //tạo Payment
 const createPayment = (newPayment) => {
   return new Promise(async (resolve, reject) => {
-    const { paymentCode, paymentName, paymentMethod, userBank, userBankNumber, adminBank,  adminBankNumber, adminBankImage, order } =
-      newPayment;
+    const {
+      paymentCode,
+      paymentName,
+      paymentMethod,
+      userBank,
+      userBankNumber,
+      // adminBank,
+      // adminBankNumber,
+      // adminBankImage,
+      orderId,
+    } = newPayment;
 
     try {
-    //   //check tên sản phẩm
-    //   const checkPayment = await Payment.findOne({
-    //     name: name,
-    //   });
-    //   //nếu name Payment đã tồn tại
-    //   if (checkPayment !== null) {
-    //     resolve({
-    //       status: "OK",
-    //       message: "The name of Payment is already",
-    //     });
-    //   }
+      // Kiểm tra `orderId` có tồn tại
+      const existingOrder = await Order.findById(orderId);
+      if (!existingOrder) {
+        return resolve({
+          status: "ERR",
+          message: "Order not found",
+        });
+      }
 
-    //   const createdPayment = await Payment.create({
-    //     name,
-    //     image,
-    //     type,
-    //     price,
-    //     countInStock,
-    //     rating,
-    //     description,
-    //   });
-    //   if (createdPayment) {
-    //     resolve({
-    //       status: "OK",
-    //       message: "SUCCESS",
-    //       data: createdPayment,
-    //     });
-    //   }
-    }
-     catch (e) {
+      // Tạo `paymentCode` tự động
+
+      const createdPayment = await Payment.create({
+        paymentCode,
+        paymentName,
+        paymentMethod,
+        userBank,
+        userBankNumber,
+        // adminBank,
+        // adminBankNumber,
+        // adminBankImage,
+        orderId,
+      });
+
+      if (createdPayment) {
+        resolve({
+          status: "OK",
+          message: "SUCCESS",
+          data: createdPayment,
+        });
+      }
+    } catch (e) {
       reject(e);
     }
   });
@@ -138,10 +149,14 @@ const getAllPayment = (limit, page, sort, filter) => {
   return new Promise(async (resolve, reject) => {
     try {
       const totalPayment = await Payment.countDocuments();
-      
-      if(filter){
+
+      if (filter) {
         const label = filter[0];
-        const allPaymentFilter = await Payment.find({ [label]: {'$regex': filter[1] } }).limit(limit).skip(page * limit) //filter gần đúng
+        const allPaymentFilter = await Payment.find({
+          [label]: { $regex: filter[1] },
+        })
+          .limit(limit)
+          .skip(page * limit); //filter gần đúng
         resolve({
           status: "OK",
           message: "Get all Payment IS SUCCESS",
@@ -152,11 +167,14 @@ const getAllPayment = (limit, page, sort, filter) => {
         });
       }
 
-      if(sort){
+      if (sort) {
         const objectSort = {};
         objectSort[sort[1]] = sort[0];
         //console.log('objectSort', objectSort)
-        const allPaymentSort = await Payment.find().limit(limit).skip(page * limit).sort(objectSort);
+        const allPaymentSort = await Payment.find()
+          .limit(limit)
+          .skip(page * limit)
+          .sort(objectSort);
         resolve({
           status: "OK",
           message: "Get all Payment IS SUCCESS",
@@ -167,7 +185,9 @@ const getAllPayment = (limit, page, sort, filter) => {
         });
       }
 
-      const allPayment = await Payment.find().limit(limit).skip(page * limit);
+      const allPayment = await Payment.find()
+        .limit(limit)
+        .skip(page * limit);
       resolve({
         status: "OK",
         message: "Get all Payment IS SUCCESS",

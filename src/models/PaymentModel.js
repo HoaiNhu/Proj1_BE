@@ -9,36 +9,37 @@ const paymentSchema = new mongoose.Schema(
     },
     paymentName: {
       type: String,
-      required: true, // Tên giao dịch thanh toán
+      required: false, // Tên giao dịch thanh toán
     },
     paymentMethod: {
       type: String,
-      required: true, // Phương thức thanh toán (VD: bank_transfer, cash)
+      required: false, // Phương thức thanh toán (VD: bank_transfer, cash)
     },
     userBank: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Bank", // Liên kết với model Bank
+      // type: mongoose.Schema.Types.ObjectId,
+      // ref: "Bank", // Liên kết với model Bank
+      type: String,
       required: true,
     },
     userBankNumber: {
       type: String,
       required: true, // Số tài khoản người dùng
     },
-    adminBank: {
+    // adminBank: {
+    //   type: mongoose.Schema.Types.ObjectId,
+    //   ref: "Bank", // Liên kết với model Bank
+    //   required: false, // Tên ngân hàng của admin
+    // },
+    // adminBankNumber: {
+    //   type: String,
+    //   required: false, // Số tài khoản admin
+    // },
+    // adminBankImage: {
+    //   type: String,
+    //   required: false, // Hình ảnh (QR code hoặc logo) ngân hàng admin
+    // },
+    orderId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Bank", // Liên kết với model Bank
-      required: true, // Tên ngân hàng của admin
-    },
-    adminBankNumber: {
-      type: String,
-      required: true, // Số tài khoản admin
-    },
-    adminBankImage: {
-      type: String,
-      required: true, // Hình ảnh (QR code hoặc logo) ngân hàng admin
-    },
-    orderCode: {
-      type: mongoose.Schema.Types.String,
       ref: "Order", // Liên kết với đơn hàng
       required: true,
     },
