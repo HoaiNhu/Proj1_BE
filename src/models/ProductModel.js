@@ -11,7 +11,7 @@ const productSchema = new mongoose.Schema(
       required: true,},
       productSize: {type: Number, require: true },
    
-   // productQuantity: { type: Number, required: true }, //số lượng sp
+   productQuantity: { type: Number, default:0}, //số lượng sp
     // productExpiry: { type: Date, required: true }, //hạn sd
     // productRating: { type: Number, required: false },
     productDescription: { type: String, required: true },

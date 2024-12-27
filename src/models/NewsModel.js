@@ -2,15 +2,7 @@ const mongoose = require("mongoose");
 
 const newsSchema = new mongoose.Schema(
   {
-    newsCode: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-    newsName: {
-      type: String,
-      required: true,
-    },
+    
     newsTitle: {
       type: String,
       required: true,
@@ -23,15 +15,15 @@ const newsSchema = new mongoose.Schema(
       type: String,
       required: false, 
     },
-    newsCategory: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Category", // Liên kết tới Category nếu có
-      required: false,
-    },
-    newsAuthor: {
-      type: String,
-      required: false,
-    },
+    // newsCategory: {
+    //   type: mongoose.Schema.Types.ObjectId,
+    //   ref: "Category", // Liên kết tới Category nếu có
+    //   required: false,
+    // },
+    // newsAuthor: {
+    //   type: String,
+    //   required: false,
+    // },
     isActive: {
       type: Boolean,
       default: true, // Trạng thái hiển thị tin tức (mặc định là active)

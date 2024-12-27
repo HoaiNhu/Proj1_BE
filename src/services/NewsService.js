@@ -4,22 +4,36 @@ const News = require("../models/NewsModel");
 const createNews = (newNews) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const checkNews = await News.findOne({ newsName: newNews.newsName });
+      const {
+        newsTitle,
+        newsContent,
+        newsImage,
+      } = newNews;
+
+      // Check for duplicate productCode or productName
+      const checkNews = await News.findOne({
+        $or: [ { newsTitle }],
+      });
+
       if (checkNews) {
         return resolve({
           status: "ERR",
-          message: "The name of News is already used",
+          message: "News already exists.",
         });
       }
 
       const createdNews = await News.create(newNews);
+
       resolve({
         status: "OK",
         message: "News created successfully",
         data: createdNews,
       });
     } catch (e) {
-      reject(e);
+      reject({
+        status: "ERR",
+        message: e.message || "Failed to create product",
+      });
     }
   });
 };

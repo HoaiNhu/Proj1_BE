@@ -7,7 +7,7 @@ const upload = multer();
 const uploadCloudinary= require("../Helper/UploadCloudinary")
 
 router.post("/create-product",authMiddleware,uploadCloudinary.single('productImage'), productController.createProduct);
-router.put("/update-product/:id",authMiddleware,uploadCloudinary.none(), productController.updateProduct);
+router.put("/update-product/:id",authMiddleware,uploadCloudinary.single('productImage'), productController.updateProduct);
 router.delete("/delete-product/:id", productController.deleteProduct);
 router.get("/get-detail-product/:id", productController.getDetailsProduct);
 router.get("/get-all-product", productController.getAllProduct);
