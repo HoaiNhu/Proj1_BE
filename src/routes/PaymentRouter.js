@@ -1,16 +1,16 @@
 const express = require("express");
 const router = express.Router();
 const paymentController = require("../controllers/PaymentController");
-const { authMiddleware, isAdminMiddleware } = require("../middleware/authMiddleware");
+const { authMiddleware } = require("../middleware/authMiddleware");
 
 // Tạo mới Payment (chỉ Admin)
-router.post("/create-payment", isAdminMiddleware, paymentController.createPayment);
+router.post("/create-payment", paymentController.createPayment);
 
 // Cập nhật Payment (chỉ Admin)
-router.put("/update-payment/:id", authMiddleware, isAdminMiddleware, paymentController.updatePayment);
+router.put("/update-payment/:id", authMiddleware,  paymentController.updatePayment);
 
 // Xóa Payment (chỉ Admin)
-router.delete("/delete-payment/:id", authMiddleware, isAdminMiddleware, paymentController.deletePayment);
+router.delete("/delete-payment/:id", authMiddleware, paymentController.deletePayment);
 
 // Lấy chi tiết Payment
 router.get("/get-detail-payment/:id", authMiddleware, paymentController.getDetailsPayment);

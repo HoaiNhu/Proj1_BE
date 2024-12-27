@@ -14,25 +14,41 @@ const orderSchema = new mongoose.Schema(
           required: true,
         },
         quantity: { type: Number, required: true }, // Số lượng
-        total: { type: Number, required: true }, // Tổng tiền cho sản phẩm
+        total: { type: Number, required: false }, // Tổng tiền cho sản phẩm
       },
     ],
 
     // Địa chỉ giao hàng
     shippingAddress: {
-      fullName: { type: String, required: true },
-      address: { type: String, required: false }, // Địa chỉ chi tiết
-      ward: { type: String, required: false }, // Xã/Phường
-      district: { type: String, required: false }, // Quận/Huyện
-      city: { type: String, required: false }, // Tỉnh/Thành phố
-      phone: { type: String, required: true },
+      familyName: { type: String, required: true },
+      userName: { type: String, required: true },
+      userAddress: { type: String, required: false }, // Địa chỉ chi tiết
+      userWard: { type: String, required: false }, // Xã/Phường
+      userDistrict: { type: String, required: false }, // Quận/Huyện
+      userCity: { type: String, required: false }, // Tỉnh/Thành phố
+      userPhone: { type: String, required: true },
+      userEmail: {
+        type: String,
+        required: true,
+        validate: {
+          validator: function (v) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+          },
+          message: "Invalid email format.",
+        },
+      },
     },
 
     // Phương thức thanh toán
     paymentMethod: { type: String, required: true, default: "Online Payment" },
 
     // Người dùng đặt hàng
-    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: false,
+      default: null,
+    },
 
     // Trạng thái đơn hàng
     status: {
@@ -51,7 +67,9 @@ const orderSchema = new mongoose.Schema(
     paidAt: { type: Date },
     isDelivered: { type: Boolean, default: false },
     deliveredAt: { type: Date },
-    orderNote: { type: String, required: false },// Ghi chú đơn hàng
+    deliveryDate: { type: Date, required: false }, // Ngày giao hàng
+    deliveryTime: { type: String, required: false }, // Giờ giao hàng (hh:mm format)
+    orderNote: { type: String, required: false }, // Ghi chú đơn hàng
   },
   {
     timestamps: true, // Tự động thêm createdAt và updatedAt

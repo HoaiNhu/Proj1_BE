@@ -5,6 +5,10 @@ const CityRouter = require("./CityRouter");
 const CategoryRouter = require("./CategoryRouter");
 const StatusRouter = require("./StatusRouter");
 const NewsRouter = require("./NewsRouter")
+const OrderRouter = require("./OrderRouter");
+const PaymentRouter = require("./PaymentRouter");
+
+
 
 const routes = (app) => {
   app.use("/api/user", UserRouter);
@@ -13,6 +17,8 @@ const routes = (app) => {
   app.use("/api/category", CategoryRouter);
   app.use("/api/status", StatusRouter);
   app.use("/api/news", NewsRouter);
+  app.use("/api/order", OrderRouter);
+  app.use("/api/payment", PaymentRouter);
 
 };
 
