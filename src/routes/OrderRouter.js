@@ -16,17 +16,13 @@ router.delete("/delete-order/:id", orderController.deleteOrder);
 router.get("/get-detail-order/:id", orderController.getOrderDetails);
 
 // Lấy danh sách tất cả đơn hàng
-router.get("/get-all-orders", orderController.getAllOrders);
+router.get("/get-all-orders", authMiddleware, orderController.getAllOrders);
 
 // Lấy danh sách đơn hàng của người dùng
-router.get(
-  "/get-orders-by-user/:userId",
-  authMiddleware,
-  orderController.getOrdersByUser
-);
+router.get("/get-orders-by-user/:userId", orderController.getOrdersByUser);
 
 // Cập nhật trạng thái thanh toán hoặc giao hàng
-router.patch(
+router.put(
   "/update-order-status/:id",
   authMiddleware,
   orderController.updateOrderStatus

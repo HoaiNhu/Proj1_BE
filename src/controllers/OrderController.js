@@ -215,20 +215,9 @@ const getOrderDetails = async (req, res) => {
 // Lấy danh sách tất cả đơn hàng
 const getAllOrders = async (req, res) => {
   try {
-    const { limit = 10, page = 0, sort, filter } = req.query;
+    const response = await OrderService.getAllOrders();
 
-    const orders = await OrderService.getAllOrders(
-      Number(limit),
-      Number(page),
-      sort,
-      filter
-    );
-
-    return res.status(200).json({
-      status: "OK",
-      message: "All orders fetched successfully",
-      data: orders,
-    });
+    return res.status(200).json(response);
   } catch (e) {
     console.error("Error in getAllOrders:", e);
     return res.status(500).json({
@@ -277,33 +266,16 @@ const getOrdersByUser = async (req, res) => {
 const updateOrderStatus = async (req, res) => {
   try {
     const orderId = req.params.id;
-    const { isPaid, isDelivered } = req.body;
+    const { statusId } = req.body; // Lấy statusId từ body
 
-    // Kiểm tra input
-    if (!orderId) {
+    if (!statusId) {
       return res.status(400).json({
         status: "ERR",
-        message: "The orderId is required",
-      });
-    }
-    if (isPaid === undefined && isDelivered === undefined) {
-      return res.status(400).json({
-        status: "ERR",
-        message: "At least one status (isPaid or isDelivered) is required",
+        message: "Status ID is required",
       });
     }
 
-    const updatedOrder = await OrderService.updateOrderStatus(orderId, {
-      isPaid,
-      isDelivered,
-    });
-
-    if (!updatedOrder) {
-      return res.status(404).json({
-        status: "ERR",
-        message: "Order not found",
-      });
-    }
+    const updatedOrder = await OrderService.updateOrderStatus(orderId, statusId);
 
     return res.status(200).json({
       status: "OK",
@@ -318,6 +290,7 @@ const updateOrderStatus = async (req, res) => {
     });
   }
 };
+
 
 module.exports = {
   createOrder,

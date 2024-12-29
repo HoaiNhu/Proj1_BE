@@ -220,28 +220,26 @@ const getOrderDetails = (id) => {
 // };
 
 // Lấy danh sách tất cả đơn hàng (có phân trang và sắp xếp)
-const getAllOrders = async (
-  limit = 10,
-  page = 0,
-  sort = "-createdAt",
-  filter = {}
-) => {
-  const orders = await Order.find(filter)
-    .sort(sort)
-    .skip(page * limit)
-    .limit(limit)
-    .populate("orderItems.product")
-    .populate("user")
-    .populate("status");
-  const totalOrders = await Order.countDocuments(filter);
-  return {
-    status: "OK",
-    message: "All orders retrieved successfully",
-    data: orders,
-    totalOrders,
-    currentPage: page,
-    totalPages: Math.ceil(totalOrders / limit),
-  };
+const getAllOrders = () => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const orders = await Order.find()
+        .populate("orderItems.product")
+        .populate("userId")
+        .populate("status"); // Lấy tất cả đơn hàng từ collection với populate
+
+      resolve({
+        status: "OK",
+        message: "Get all Orders is SUCCESS",
+        data: orders,
+      });
+    } catch (error) {
+      reject({
+        status: "ERR",
+        message: error.message || "Failed to retrieve orders",
+      });
+    }
+  });
 };
 
 // Lấy danh sách đơn hàng của người dùng
@@ -263,25 +261,32 @@ const getOrdersByUser = (userId) => {
 };
 
 // Cập nhật trạng thái đơn hàng
-const updateOrderStatus = (id, statusData) => {
+const updateOrderStatus = (id, statusId) => {
   return new Promise(async (resolve, reject) => {
     try {
-      await checkOrderExistence(id); // Kiểm tra tồn tại
+      // Kiểm tra _id có hợp lệ không
+      const status = await Status.findById(statusId);
+      if (!status) {
+        return reject(new Error("Invalid status ID"));
+      }
+
       const updatedOrder = await Order.findByIdAndUpdate(
         id,
-        { status: statusData },
+        { status: status._id },
         { new: true }
       );
-      resolve({
-        status: "OK",
-        message: "Order status updated successfully",
-        data: updatedOrder,
-      });
+
+      if (!updatedOrder) {
+        return reject(new Error("Order not found"));
+      }
+
+      resolve(updatedOrder);
     } catch (e) {
       reject(e);
     }
   });
 };
+
 
 module.exports = {
   createOrder,
