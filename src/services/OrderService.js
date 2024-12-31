@@ -1,5 +1,6 @@
 const Order = require("../models/OrderModel");
 const Status = require("../models/StatusModel");
+const mongoose = require("mongoose");
 
 // Kiểm tra tồn tại đơn hàng
 const checkOrderExistence = async (id) => {
@@ -244,9 +245,10 @@ const getAllOrders = () => {
 
 // Lấy danh sách đơn hàng của người dùng
 const getOrdersByUser = (userId) => {
+  console.log("USERID", userId);
   return new Promise(async (resolve, reject) => {
     try {
-      const orders = await Order.find({ user: userId })
+      const orders = await Order.find({ userId: new mongoose.Types.ObjectId(userId) })
         .populate("orderItems.product")
         .populate("status");
       resolve({
@@ -259,6 +261,7 @@ const getOrdersByUser = (userId) => {
     }
   });
 };
+
 
 // Cập nhật trạng thái đơn hàng
 const updateOrderStatus = (id, statusId) => {

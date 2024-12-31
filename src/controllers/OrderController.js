@@ -1,3 +1,4 @@
+const Status = require("../models/StatusModel");
 const OrderService = require("../services/OrderService");
 
 // Tạo đơn hàng mới
@@ -231,7 +232,7 @@ const getAllOrders = async (req, res) => {
 const getOrdersByUser = async (req, res) => {
   try {
     const userId = req.params.userId;
-
+   console.log("QWE", userId)
     // Kiểm tra input
     if (!userId) {
       return res.status(400).json({
@@ -240,26 +241,32 @@ const getOrdersByUser = async (req, res) => {
       });
     }
 
-    const orders = await OrderService.getOrdersByUser(userId);
+    const response = await OrderService.getOrdersByUser(userId);
+    const orders= response.data
+    console.log("ORDERS", orders)
     if (!orders || orders.length === 0) {
       return res.status(404).json({
         status: "ERR",
         message: "No orders found for this user",
       });
     }
-
+    console.log("STATUS", response.status)
+    console.log("ORDERS", orders)
     return res.status(200).json({
       status: "OK",
       message: "User orders fetched successfully",
       data: orders,
     });
-  } catch (e) {
+   
+  }
+   catch (e) {
     console.error("Error in getOrdersByUser:", e);
     return res.status(500).json({
       status: "ERR",
       message: e.message || "Internal server error",
     });
   }
+
 };
 
 // Cập nhật trạng thái đơn hàng
