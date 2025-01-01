@@ -230,11 +230,49 @@ const searchProducts = async (query) => {
   }
 };
 
+/**
+ * Get products by category
+ */
+const getProductsByCategory = (categoryId) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      if (!categoryId) {
+        return resolve({
+          status: "ERR",
+          message: "Category ID is required",
+        });
+      }
+
+      const products = await Product.find({ productCategory: categoryId });
+
+      if (products.length === 0) {
+        return resolve({
+          status: "ERR",
+          message: "No products found for this category",
+        });
+      }
+
+      resolve({
+        status: "OK",
+        message: "Products retrieved successfully",
+        data: products,
+      });
+    } catch (e) {
+      reject({
+        status: "ERR",
+        message: e.message || "Failed to get products by category",
+      });
+    }
+  });
+};
+
 module.exports = {
   createProduct,
   updateProduct,
   deleteProduct,
   getDetailsProduct,
   getAllProduct,
-  searchProducts
+  searchProducts,
+  getProductsByCategory, // Export the new function
 };
+

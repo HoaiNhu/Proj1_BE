@@ -7,6 +7,7 @@ const StatusRouter = require("./StatusRouter");
 const NewsRouter = require("./NewsRouter")
 const OrderRouter = require("./OrderRouter");
 const PaymentRouter = require("./PaymentRouter");
+const DiscountRouter= require("./DiscountRouter")
 
 
 
@@ -19,7 +20,7 @@ const routes = (app) => {
   app.use("/api/news", NewsRouter);
   app.use("/api/order", OrderRouter);
   app.use("/api/payment", PaymentRouter);
-
+  app.use("/api/discount", DiscountRouter)
 };
 
 module.exports = routes;

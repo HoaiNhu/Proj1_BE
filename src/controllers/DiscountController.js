@@ -8,11 +8,9 @@ const createDiscount = async (req, res) => {
       discountCode,
       discountName,
       discountValue,
-      discountType,
       applicableCategory,
       discountStartDate,
       discountEndDate,
-      isActive,
     } = req.body;
     //console.log("req.body", req.body);
 
@@ -20,20 +18,30 @@ const createDiscount = async (req, res) => {
       !discountCode ||
       !discountName ||
       !discountValue ||
-      !discountType ||
       !applicableCategory ||
+      !req.file||
       !discountStartDate ||
-      !discountEndDate ||
-      !isActive
+      !discountEndDate 
     ) {
       //check have
-      return res.status(200).json({
+      return res.status(400).json({
         status: "ERR",
         message: "The input is required",
       });
     }
-
-    const response = await DiscountService.createDiscount(req.body);
+    const discountImage= req.file.path;
+    const newDiscount={
+      discountCode,
+      discountName,
+      discountValue,
+      applicableCategory,
+      discountImage,
+      discountStartDate,
+      discountEndDate,
+    }
+    console.log("NEW", newDiscount)
+    const response = await DiscountService.createDiscount(newDiscount);
+    console.log("NEW1")
     return res.status(200).json(response);
   } catch (e) {
     return res.status(404).json({
@@ -103,20 +111,21 @@ const getDetailsDiscount = async (req, res) => {
 };
 
 //get all discount
+
 const getAllDiscount = async (req, res) => {
   try {
     const { limit, page, sort, filter } = req.query;
-    const response = await DiscountService.getAllDiscount(
-      Number(limit) || 8,
-      Number(page) || 0,
+
+    const response = await ProductService.getAllDiscount(
+      Number(limit),
+      Number(page) ,
       sort,
       filter
     );
     return res.status(200).json(response);
   } catch (e) {
-    return res.status(400).json({
-      status: "ERR",
-      message: e.message,
+    return res.status(500).json({
+      message: e.message || "Something went wrong",
     });
   }
 };

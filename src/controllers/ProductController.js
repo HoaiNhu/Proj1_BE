@@ -187,6 +187,26 @@ const searchProducts = async (req, res) => {
   }
 };
 
+// Lấy sản phẩm theo danh mục
+const getProductsByCategory = async (req, res) => {
+  try {
+    const { categoryId } = req.params; // Lấy categoryId từ URL params
+
+    if (!categoryId) {
+      return res.status(400).json({
+        status: "ERR",
+        message: "Category ID is required",
+      });
+    }
+
+    const response = await ProductService.getProductsByCategory(categoryId); // Gọi hàm từ ProductService
+    return res.status(200).json(response);
+  } catch (e) {
+    return res.status(500).json({
+      message: e.message || "Something went wrong",
+    });
+  }
+};
 
 module.exports = {
   createProduct,
@@ -194,6 +214,8 @@ module.exports = {
   deleteProduct,
   getDetailsProduct,
   getAllProduct,
-  searchProducts, // Thêm phương thức tìm kiếm
+  searchProducts,
+  getProductsByCategory, // Thêm phương thức mới vào module.exports
 };
+
 
