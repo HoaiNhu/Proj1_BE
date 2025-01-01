@@ -2,13 +2,13 @@ const express = require("express");
 const router = express.Router();
 const discountController = require("../controllers/DiscountController");
 const { authMiddleware } = require("../middleware/authMiddleware");
-
+const uploadCloudinary = require("../Helper/DiscountUploadCloudinary")
 // Routes chính
-router.post("/create-discount", authMiddleware, discountController.createDiscount);
-router.put("/update-discount/:id", authMiddleware, discountController.updateDiscount);
+router.post("/create-discount", authMiddleware,uploadCloudinary.single('discountImage'), discountController.createDiscount);
+router.put("/update-discount/:id", authMiddleware,uploadCloudinary.single('discountImage'),  discountController.updateDiscount);
 router.delete("/delete-discount/:id", authMiddleware, discountController.deleteDiscount);
 router.get("/get-details/:id", discountController.getDetailsDiscount);
-router.get("/get-all", discountController.getAllDiscount);
+router.get("/get-all-discount", discountController.getAllDiscount);
 
 // Các routes bổ sung
 router.post("/apply-discount", authMiddleware, discountController.applyDiscount);

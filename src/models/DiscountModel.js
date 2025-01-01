@@ -18,19 +18,23 @@ const discountSchema = new mongoose.Schema(
     discountType: {
       type: String,
       enum: ["PERCENTAGE", "FIXED_AMOUNT"], // PERCENTAGE: theo %, FIXED_AMOUNT: số tiền cố định
-      required: true,
+      required: false,
     },
     applicableCategory: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Category", // Liên kết với model Category để áp dụng khuyến mãi theo loại sản phẩm
       required: false, // Không bắt buộc, nếu null thì áp dụng cho tất cả sản phẩm
     },
+    discountImage:{
+      type: String, 
+      require: true 
+    },
     discountStartDate: {
-      type: Date,
+      type: String,
       required: true,
     },
     discountEndDate: {
-      type: Date,
+      type: String,
       required: true,
     },
     isActive: {

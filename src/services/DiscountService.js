@@ -1,54 +1,48 @@
 const Discount = require("../models/DiscountModel");
 
-//tạo Discount
+// Tạo Discount
 const createDiscount = (newDiscount) => {
   return new Promise(async (resolve, reject) => {
-    const {
-      discountCode,
-      discountName,
-      discountValue,
-      discountType,
-      applicableCategory,
-      discountStartDate,
-      discountEndDate,
-      isActive,
-    } = newDiscount;
-
     try {
-      //check tên sản phẩm
-      const checkDiscount = await Discount.findOne({
-        name: discountName,
-      });
-      //nếu name Discount đã tồn tại
-      if (checkDiscount !== null) {
-        resolve({
-          status: "OK",
-          message: "The name of Discount is already",
-        });
-      }
-
-      const createdDiscount = await Discount.create({
+      const {
         discountCode,
         discountName,
         discountValue,
-        discountType,
         applicableCategory,
+        discountImage,
         discountStartDate,
         discountEndDate,
-        isActive,
+      } = newDiscount;
+
+      // Check for duplicate productCode or productName
+      const checkDiscount = await Discount.findOne({
+        $or: [ { discountName }],
       });
-      if (createdDiscount) {
-        resolve({
-          status: "OK",
-          message: "SUCCESS",
-          data: createdDiscount,
+
+      if (checkDiscount) {
+        return resolve({
+          status: "ERR",
+          message: "Product name already exists.",
         });
       }
+
+      const createdDiscount = await Discount.create(newDiscount);
+
+      resolve({
+        status: "OK",
+        message: "Product created successfully",
+        data: createdDiscount,
+      });
     } catch (e) {
-      reject(e);
+      reject({
+        status: "ERR",
+        message: e.message || "Failed to create product",
+      });
     }
   });
 };
+
+
 
 //update Discount
 const updateDiscount = (id, data) => {
@@ -141,60 +135,40 @@ const getDetailsDiscount = (id) => {
   });
 };
 
-//get all Discount
 const getAllDiscount = (limit, page, sort, filter) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const totalDiscount = await Discount.countDocuments();
+      const query = {};
 
+      // Add filtering condition
       if (filter) {
-        const label = filter[0];
-        const allDiscountFilter = await Discount.find({
-          [label]: { $regex: filter[1] },
-        })
-          .limit(limit)
-          .skip(page * limit); //filter gần đúng
-        resolve({
-          status: "OK",
-          message: "Get all Discount IS SUCCESS",
-          data: allDiscountFilter,
-          total: totalDiscount,
-          pageCurrent: Number(page + 1),
-          totalPage: Math.ceil(totalDiscount / limit),
-        });
+        const [field, value] = filter;
+        query[field] = { $regex: value, $options: "i" }; // Case-insensitive partial match
       }
 
-      if (sort) {
-        const objectSort = {};
-        objectSort[sort[1]] = sort[0];
-        //console.log('objectSort', objectSort)
-        const allDiscountSort = await Discount.find()
-          .limit(limit)
-          .skip(page * limit)
-          .sort(objectSort);
-        resolve({
-          status: "OK",
-          message: "Get all Discount IS SUCCESS",
-          data: allDiscountSort,
-          total: totalDiscount,
-          pageCurrent: Number(page + 1),
-          totalPage: Math.ceil(totalDiscount / limit),
-        });
-      }
+      const totalDiscount = await Discount.countDocuments(query);
 
-      const allDiscount = await Discount.find()
+      // Add sorting condition
+      const sortCondition = sort ? { [sort[1]]: sort[0] } : {};
+
+      const allDiscount = await Discount.find(query)
         .limit(limit)
-        .skip(page * limit);
+        .skip(page * limit)
+        .sort(sortCondition);
+
       resolve({
         status: "OK",
-        message: "Get all Discount IS SUCCESS",
+        message: "Products retrieved successfully",
         data: allDiscount,
         total: totalDiscount,
-        pageCurrent: Number(page + 1),
+        pageCurrent: Number(page) + 1,
         totalPage: Math.ceil(totalDiscount / limit),
       });
     } catch (e) {
-      reject(e);
+      reject({
+        status: "ERR",
+        message: e.message || "Failed to get products",
+      });
     }
   });
 };
