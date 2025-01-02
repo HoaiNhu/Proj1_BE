@@ -29,7 +29,7 @@ const createProduct = async (req, res) => {
        !productPrice ||
        !req.file||
        !productCategory ||
-       !productSize ||
+     
       // !productQuantity ||
       // !productExpiry ||
        !productDescription
