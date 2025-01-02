@@ -9,8 +9,7 @@ const productSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "productImage",
       required: true,},
-      productSize: {type: Number, require: true },
-   
+      productSize: {type: Number, default:0 },
    productQuantity: { type: Number, default:0}, //số lượng sp
     // productExpiry: { type: Date, required: true }, //hạn sd
     // productRating: { type: Number, required: false },
