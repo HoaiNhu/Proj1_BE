@@ -77,14 +77,19 @@ const createProduct = async (req, res) => {
 const updateProduct = async (req, res) => {
   try {
     const productId = req.params.id;
-    console.log("ID",productId)
-    const data = req.body;
-    console.log("data", data);
+
     if (!productId) {
-      return res.status(200).json({
+      return res.status(400).json({
         status: "ERR",
         message: "The productId is required",
       });
+    }
+
+    const data = req.body;
+
+    // Kiểm tra nếu có file mới để upload
+    if (req.file) {
+      data.productImage = req.file.path; // Lưu URL ảnh mới từ Cloudinary
     }
 
     const response = await ProductService.updateProduct(productId, data);
@@ -95,6 +100,7 @@ const updateProduct = async (req, res) => {
     });
   }
 };
+
 
 // Xóa sản phẩm
 const deleteProduct = async (req, res) => {
