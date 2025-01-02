@@ -114,18 +114,20 @@ const getDetailsDiscount = async (req, res) => {
 
 const getAllDiscount = async (req, res) => {
   try {
+    
     const { limit, page, sort, filter } = req.query;
 
-    const response = await ProductService.getAllDiscount(
+    const response = await DiscountService.getAllDiscount(
       Number(limit),
       Number(page) ,
       sort,
       filter
     );
     return res.status(200).json(response);
-  } catch (e) {
+  } catch (e) {console.log(e)
     return res.status(500).json({
       message: e.message || "Something went wrong",
+      
     });
   }
 };
