@@ -3,7 +3,7 @@ const bcrypt = require("bcrypt");
 const { generalAccessToken, generalRefreshToken } = require("./JwtService");
 
 //tạo user
-const createUser = (newUser) => {
+const createUser = (newUser) => { 
   return new Promise(async (resolve, reject) => {
     const {
       familyName,

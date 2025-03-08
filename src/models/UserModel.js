@@ -48,6 +48,10 @@ const userSchema = new mongoose.Schema(
     // },
     // access_token: { type: String },
     // refresh_token: { type: String },
+
+    // Trường OTP
+    resetPasswordOTP: { type: String },
+    resetPasswordExpires: { type: Date },
   },
   {
     timestamps: true,
