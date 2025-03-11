@@ -7,20 +7,20 @@ const createProduct = (newProduct) => {
   return new Promise(async (resolve, reject) => {
     try {
       const {
-       //  productCode,
+        //  productCode,
         productName,
         productImage,
         productCategory,
         productPrice,
         //productQuantity,
-       // productExpiry,
-       // productRating,
+        // productExpiry,
+        // productRating,
         productDescription,
       } = newProduct;
 
       // Check for duplicate productCode or productName
       const checkProduct = await Product.findOne({
-        $or: [ { productName }],
+        $or: [{ productName }],
       });
 
       if (checkProduct) {
@@ -275,4 +275,3 @@ module.exports = {
   searchProducts,
   getProductsByCategory, // Export the new function
 };
-
