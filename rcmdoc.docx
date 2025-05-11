@@ -1,0 +1,9 @@
+Bước 1: Cài Đặt Môi Trường Python
+Cài đặt Python (phiên bản 3.8 trở lên) và tạo môi trường ảo:
+python -m venv venv
+source venv/bin/activate  # Trên Linux/Mac
+venv\Scripts\activate     # Trên Windows
+
+Cài đặt các thư viện cần thiết:
+
+pip install flask pymongo scikit-learn numpy pandas

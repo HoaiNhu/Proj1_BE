@@ -179,24 +179,37 @@ const deleteOrder = (id) => {
 const getOrderDetails = (id) => {
   return new Promise(async (resolve, reject) => {
     try {
+      // Kiểm tra id có hợp lệ không
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return resolve({
+          status: "ERR",
+          message: "Invalid order ID format",
+        });
+      }
+
       const order = await Order.findById(id)
         .populate("orderItems.product")
-        .populate("user")
+        .populate("userId")
+        // .populate("user")
         .populate("status");
       if (!order) {
-        resolve({
+        return resolve({
           status: "ERR",
           message: "Order not found",
         });
       }
 
-      resolve({
+      return resolve({
         status: "OK",
         message: "Order details retrieved successfully",
         data: order,
       });
     } catch (e) {
-      reject(e);
+      console.error("Error in getOrderDetails:", e);
+      return resolve({
+        status: "ERR",
+        message: e.message || "Error retrieving order details",
+      });
     }
   });
 };
@@ -227,7 +240,7 @@ const getAllOrders = () => {
       const orders = await Order.find()
         .populate("orderItems.product")
         .populate("userId")
-        .populate("status"); // Lấy tất cả đơn hàng từ collection với populate
+        .populate("status");
 
       resolve({
         status: "OK",
@@ -248,7 +261,9 @@ const getOrdersByUser = (userId) => {
   console.log("USERID", userId);
   return new Promise(async (resolve, reject) => {
     try {
-      const orders = await Order.find({ userId: new mongoose.Types.ObjectId(userId) })
+      const orders = await Order.find({
+        userId: new mongoose.Types.ObjectId(userId),
+      })
         .populate("orderItems.product")
         .populate("status");
       resolve({
@@ -261,7 +276,6 @@ const getOrdersByUser = (userId) => {
     }
   });
 };
-
 
 // Cập nhật trạng thái đơn hàng
 const updateOrderStatus = (id, statusId) => {
@@ -289,7 +303,6 @@ const updateOrderStatus = (id, statusId) => {
     }
   });
 };
-
 
 module.exports = {
   createOrder,

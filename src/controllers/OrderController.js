@@ -182,33 +182,30 @@ const deleteOrder = async (req, res) => {
 const getOrderDetails = async (req, res) => {
   try {
     const orderId = req.params.id;
-
-    // Kiểm tra input
     if (!orderId) {
       return res.status(400).json({
         status: "ERR",
-        message: "The orderId is required",
+        message: "Order ID is required",
       });
     }
 
     const order = await OrderService.getOrderDetails(orderId);
-    if (!order) {
+    if (order.status === "ERR") {
       return res.status(404).json({
         status: "ERR",
-        message: "Order not found",
+        message: order.message,
       });
     }
 
     return res.status(200).json({
       status: "OK",
-      message: "Order details fetched successfully",
-      data: order,
+      message: "Order details retrieved successfully",
+      data: order.data,
     });
-  } catch (e) {
-    console.error("Error in getOrderDetails:", e);
+  } catch (error) {
     return res.status(500).json({
       status: "ERR",
-      message: e.message || "Internal server error",
+      message: error.message || "Error retrieving order details",
     });
   }
 };
@@ -232,7 +229,7 @@ const getAllOrders = async (req, res) => {
 const getOrdersByUser = async (req, res) => {
   try {
     const userId = req.params.userId;
-   console.log("QWE", userId)
+    console.log("QWE", userId);
     // Kiểm tra input
     if (!userId) {
       return res.status(400).json({
@@ -242,31 +239,28 @@ const getOrdersByUser = async (req, res) => {
     }
 
     const response = await OrderService.getOrdersByUser(userId);
-    const orders= response.data
-    console.log("ORDERS", orders)
+    const orders = response.data;
+    console.log("ORDERS", orders);
     if (!orders || orders.length === 0) {
       return res.status(404).json({
         status: "ERR",
         message: "No orders found for this user",
       });
     }
-    console.log("STATUS", response.status)
-    console.log("ORDERS", orders)
+    console.log("STATUS", response.status);
+    console.log("ORDERS", orders);
     return res.status(200).json({
       status: "OK",
       message: "User orders fetched successfully",
       data: orders,
     });
-   
-  }
-   catch (e) {
+  } catch (e) {
     console.error("Error in getOrdersByUser:", e);
     return res.status(500).json({
       status: "ERR",
       message: e.message || "Internal server error",
     });
   }
-
 };
 
 // Cập nhật trạng thái đơn hàng
@@ -282,7 +276,10 @@ const updateOrderStatus = async (req, res) => {
       });
     }
 
-    const updatedOrder = await OrderService.updateOrderStatus(orderId, statusId);
+    const updatedOrder = await OrderService.updateOrderStatus(
+      orderId,
+      statusId
+    );
 
     return res.status(200).json({
       status: "OK",
@@ -297,7 +294,6 @@ const updateOrderStatus = async (req, res) => {
     });
   }
 };
-
 
 module.exports = {
   createOrder,

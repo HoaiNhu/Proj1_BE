@@ -56,7 +56,11 @@ const orderSchema = new mongoose.Schema(
       ref: "Status",
       required: true,
     },
-
+    paymentStatus: {
+      type: String,
+      default: "PENDING",
+      enum: ["PENDING", "SUCCESS", "FAILED"],
+    },
     // Các giá trị thanh toán
     shippingPrice: { type: Number, required: true, default: 30000 }, // Phí vận chuyển cố định
     totalItemPrice: { type: Number, required: true }, // Tổng tiền hàng
