@@ -124,6 +124,13 @@ const createOrder = async (orderData) => {
         orderNote,
       });
 
+      // Gọi API FastAPI để cập nhật mô hình khuyến nghị
+      try {
+        await axios.post("http://localhost:8000/update-model");
+      } catch (error) {
+        console.error("Lỗi khi cập nhật mô hình khuyến nghị:", error);
+      }
+
       resolve({
         status: "OK",
         message: "Order created successfully",
