@@ -1,8 +1,11 @@
 const axios = require("axios");
 
+const FASTAPI_URL =
+  process.env.FASTAPI_URL || "https://fastapi-rcm.onrender.com";
+
 const getRecommendations = async (userId, productId) => {
   try {
-    const response = await axios.post("http://localhost:8000/recommend", {
+    const response = await axios.post(`${FASTAPI_URL}/recommend`, {
       user_id: userId,
       product_id: productId,
     });
@@ -17,7 +20,7 @@ const getRecommendations = async (userId, productId) => {
 const logInteraction = async (interaction) => {
   try {
     const response = await axios.post(
-      "http://localhost:8000/interaction/log",
+      `${FASTAPI_URL}/interaction/log`,
       interaction
     );
     return response.data;

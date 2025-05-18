@@ -126,7 +126,7 @@ const createOrder = async (orderData) => {
 
       // Gọi API FastAPI để cập nhật mô hình khuyến nghị
       try {
-        await axios.post("http://localhost:8000/update-model");
+        await axios.post(`${process.env.FASTAPI_URL}/update-model`);
       } catch (error) {
         console.error("Lỗi khi cập nhật mô hình khuyến nghị:", error);
       }
