@@ -129,13 +129,23 @@ const deleteProduct = (id) => {
 const getDetailsProduct = (id) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const product = await Product.findById(id).populate("productCategory");
+      const product = await Product.findById(id)
+        .populate("productCategory")
+        .lean();
 
       if (!product) {
         return resolve({
           status: "ERR",
           message: "Product not found",
         });
+      }
+
+      // Đảm bảo averageRating và totalRatings luôn có giá trị
+      if (!product.averageRating) {
+        product.averageRating = 5; // Giá trị mặc định
+      }
+      if (!product.totalRatings) {
+        product.totalRatings = 5; // Giá trị mặc định
       }
 
       resolve({

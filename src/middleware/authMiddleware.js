@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
+const User = require("../models/UserModel");
 dotenv.config();
 
 // Middleware xác thực cho admin
@@ -73,7 +74,53 @@ const authUserMiddleware = (req, res, next) => {
   });
 };
 
+// Middleware xác thực cho user thông thường
+const authUserTokenMiddleware = async (req, res, next) => {
+  try {
+    const token = req.headers.token?.split(" ")[1];
+    if (!token) {
+      return res.status(401).json({
+        status: "ERR",
+        message: "Không tìm thấy token",
+      });
+    }
+
+    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN);
+    if (!decoded) {
+      return res.status(401).json({
+        status: "ERR",
+        message: "Token không hợp lệ hoặc đã hết hạn",
+      });
+    }
+
+    // Lấy thông tin user từ database
+    const user = await User.findById(decoded.id);
+    if (!user) {
+      return res.status(401).json({
+        status: "ERR",
+        message: "Không tìm thấy người dùng",
+      });
+    }
+
+    // Gán thông tin user vào request
+    req.user = {
+      id: user._id,
+      userName: user.userName,
+      email: user.email,
+      isAdmin: user.isAdmin,
+    };
+
+    next();
+  } catch (e) {
+    return res.status(401).json({
+      status: "ERR",
+      message: "Token không hợp lệ hoặc đã hết hạn",
+    });
+  }
+};
+
 module.exports = {
   authMiddleware,
   authUserMiddleware,
+  authUserTokenMiddleware,
 };

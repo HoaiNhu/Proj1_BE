@@ -13,7 +13,8 @@ const productSchema = new mongoose.Schema(
     productSize: { type: Number, default: 0 },
     productQuantity: { type: Number, default: 0 }, //số lượng sp
     // productExpiry: { type: Date, required: true }, //hạn sd
-    // productRating: { type: Number, required: false },
+    averageRating: { type: Number, default: 5.0 }, // Mặc định 5 sao
+    totalRatings: { type: Number, default: 1 }, // Mặc định 1 đánh giá (đánh giá mặc định)
     productDescription: { type: String, required: true },
   },
   {
