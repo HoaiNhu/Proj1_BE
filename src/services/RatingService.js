@@ -38,8 +38,9 @@ const createRating = async (ratingData) => {
         );
         const averageRating = totalRating / allRatings.length;
 
+        // Cập nhật rating trung bình và tổng số đánh giá
         await Product.findByIdAndUpdate(productId, {
-          averageRating: averageRating.toFixed(1),
+          averageRating: Number(averageRating.toFixed(1)),
           totalRatings: allRatings.length,
         });
 
@@ -68,8 +69,9 @@ const createRating = async (ratingData) => {
       );
       const averageRating = totalRating / allRatings.length;
 
+      // Cập nhật rating trung bình và tổng số đánh giá
       await Product.findByIdAndUpdate(productId, {
-        averageRating: averageRating.toFixed(1),
+        averageRating: Number(averageRating.toFixed(1)),
         totalRatings: allRatings.length,
       });
 
