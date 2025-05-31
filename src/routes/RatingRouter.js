@@ -4,6 +4,11 @@ const ratingController = require("../controllers/RatingController");
 const { authUserTokenMiddleware } = require("../middleware/authMiddleware");
 
 router.post("/create", authUserTokenMiddleware, ratingController.createRating);
+router.put(
+  "/update/:ratingId",
+  authUserTokenMiddleware,
+  ratingController.updateRating
+);
 router.get("/product/:productId", ratingController.getProductRatings);
 router.get(
   "/user/:productId/:orderId",

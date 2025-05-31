@@ -133,8 +133,59 @@ const getUserRating = async (userId, productId, orderId) => {
   });
 };
 
+const updateRating = async (ratingId, userId, updateData) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const { rating, comment } = updateData;
+
+      // Tìm đánh giá cần cập nhật
+      const existingRating = await Rating.findOne({ _id: ratingId, userId });
+
+      if (!existingRating) {
+        return reject({
+          status: "ERR",
+          message: "Không tìm thấy đánh giá hoặc bạn không có quyền cập nhật",
+        });
+      }
+
+      // Cập nhật đánh giá
+      existingRating.rating = rating;
+      existingRating.comment = comment;
+      await existingRating.save();
+
+      // Tính lại điểm trung bình
+      const allRatings = await Rating.find({
+        productId: existingRating.productId,
+      });
+      const totalRating = allRatings.reduce(
+        (sum, item) => sum + item.rating,
+        0
+      );
+      const averageRating = totalRating / allRatings.length;
+
+      // Cập nhật rating trung bình và tổng số đánh giá
+      await Product.findByIdAndUpdate(existingRating.productId, {
+        averageRating: Number(averageRating.toFixed(1)),
+        totalRatings: allRatings.length,
+      });
+
+      resolve({
+        status: "OK",
+        message: "Cập nhật đánh giá thành công",
+        data: existingRating,
+      });
+    } catch (e) {
+      reject({
+        status: "ERR",
+        message: e.message,
+      });
+    }
+  });
+};
+
 module.exports = {
   createRating,
   getProductRatings,
   getUserRating,
+  updateRating,
 };

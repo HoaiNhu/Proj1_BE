@@ -82,8 +82,35 @@ const getUserRating = async (req, res) => {
   }
 };
 
+const updateRating = async (req, res) => {
+  try {
+    const { ratingId } = req.params;
+    const { rating, comment } = req.body;
+    const userId = req.user.id;
+
+    if (!ratingId || !rating) {
+      return res.status(400).json({
+        status: "ERR",
+        message: "Thiếu thông tin đánh giá",
+      });
+    }
+
+    const response = await RatingService.updateRating(ratingId, userId, {
+      rating,
+      comment,
+    });
+
+    return res.status(200).json(response);
+  } catch (e) {
+    return res.status(500).json({
+      message: e.message,
+    });
+  }
+};
+
 module.exports = {
   createRating,
   getProductRatings,
   getUserRating,
+  updateRating,
 };
