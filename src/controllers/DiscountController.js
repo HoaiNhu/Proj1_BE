@@ -8,7 +8,7 @@ const createDiscount = async (req, res) => {
       discountCode,
       discountName,
       discountValue,
-      applicableCategory,
+      applicableProduct,
       discountStartDate,
       discountEndDate,
     } = req.body;
@@ -18,11 +18,13 @@ const createDiscount = async (req, res) => {
       !discountCode ||
       !discountName ||
       !discountValue ||
-      !applicableCategory ||
+      !applicableProduct||
       !req.file||
       !discountStartDate ||
       !discountEndDate 
     ) {
+      console.log("bhjtg", req.body)
+     
       //check have
       return res.status(400).json({
         status: "ERR",
@@ -34,7 +36,7 @@ const createDiscount = async (req, res) => {
       discountCode,
       discountName,
       discountValue,
-      applicableCategory,
+      applicableProduct,
       discountImage,
       discountStartDate,
       discountEndDate,
@@ -44,6 +46,7 @@ const createDiscount = async (req, res) => {
     console.log("NEW1")
     return res.status(200).json(response);
   } catch (e) {
+    console.log("err", e)
     return res.status(404).json({
       message: e,
     });
@@ -135,17 +138,16 @@ const getAllDiscount = async (req, res) => {
 // Áp dụng mã giảm giá vào đơn hàng
 const applyDiscount = async (req, res) => {
   try {
-    const { discountCode, totalPrice } = req.body;
-    if (!discountCode || !totalPrice) {
+    const { discountCode, productId } = req.body;
+
+    if (!discountCode || !productId) {
       return res.status(400).json({
         status: "ERR",
-        message: "Discount code and total price are required",
+        message: "Discount code and product ID are required",
       });
     }
-    const response = await DiscountService.applyDiscount(
-      discountCode,
-      totalPrice
-    );
+
+    const response = await DiscountService.applyDiscount(productId, discountCode);
     return res.status(200).json(response);
   } catch (e) {
     return res.status(400).json({
@@ -154,6 +156,7 @@ const applyDiscount = async (req, res) => {
     });
   }
 };
+
 
 // Kiểm tra tính hợp lệ của mã giảm giá
 const validateDiscount = async (req, res) => {

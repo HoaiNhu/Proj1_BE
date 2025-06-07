@@ -15,19 +15,10 @@ const discountSchema = new mongoose.Schema(
       type: Number,
       required: true, // Giá trị chiết khấu (số tiền hoặc phần trăm)
     },
-    discountType: {
+
+    discountImage: {
       type: String,
-      enum: ["PERCENTAGE", "FIXED_AMOUNT"], // PERCENTAGE: theo %, FIXED_AMOUNT: số tiền cố định
-      required: false,
-    },
-    applicableCategory: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Category", // Liên kết với model Category để áp dụng khuyến mãi theo loại sản phẩm
-      required: false, // Không bắt buộc, nếu null thì áp dụng cho tất cả sản phẩm
-    },
-    discountImage:{
-      type: String, 
-      require: true 
+      require: true
     },
     discountStartDate: {
       type: String,
@@ -41,6 +32,11 @@ const discountSchema = new mongoose.Schema(
       type: Boolean,
       default: true, // Trạng thái khuyến mãi (true: còn hiệu lực, false: vô hiệu)
     },
+    discountProduct:[{
+      type: mongoose.Schema.Types.ObjectId,
+            ref: "Product",
+            required: true,
+    }]
   },
   {
     timestamps: true, // Tự động thêm createdAt và updatedAt
