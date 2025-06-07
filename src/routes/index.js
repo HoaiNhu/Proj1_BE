@@ -10,6 +10,7 @@ const PaymentRouter = require("./PaymentRouter");
 const DiscountRouter = require("./DiscountRouter");
 const Recommendation = require("./RecommendationRouter");
 const Rating = require("./RatingRouter");
+const AIRouter = require("./AIRouter");
 
 const routes = (app) => {
   app.use("/api/user", UserRouter);
@@ -23,6 +24,7 @@ const routes = (app) => {
   app.use("/api/discount", DiscountRouter);
   app.use("/api/recommendation", Recommendation);
   app.use("/api/rating", Rating);
+  app.use("/api/ai", AIRouter);
 };
 
 module.exports = routes;
