@@ -1,255 +1,245 @@
 const Discount = require("../models/DiscountModel");
+const Product = require("../models/ProductModel");
 
-// Tạo Discount
+// Tạo Discount mới
 const createDiscount = (newDiscount) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const {
-        discountCode,
-        discountName,
-        discountValue,
-        applicableCategory,
-        discountImage,
-        discountStartDate,
-        discountEndDate,
-      } = newDiscount;
+      const { discountCode, discountName, discountStartDate, discountEndDate, discountProduct } = newDiscount;
 
-      // Check for duplicate productCode or productName
-      const checkDiscount = await Discount.findOne({
-        $or: [ { discountName }],
-      });
-
-      if (checkDiscount) {
+      // Kiểm tra code trùng
+      const existing = await Discount.findOne({ discountCode });
+      if (existing) {
         return resolve({
           status: "ERR",
-          message: "Product name already exists.",
+          message: "Mã khuyến mãi đã tồn tại.",
         });
       }
 
-      const createdDiscount = await Discount.create(newDiscount);
+      // Kiểm tra logic ngày
+      if (discountStartDate >= discountEndDate) {
+        return resolve({
+          status: "ERR",
+          message: "Ngày bắt đầu phải trước ngày kết thúc.",
+        });
+      }
 
+      // Kiểm tra danh sách sản phẩm không rỗng và tồn tại
+      if (!discountProduct || discountProduct.length === 0) {
+        return resolve({
+          status: "ERR",
+          message: "Phải chọn ít nhất một sản phẩm áp dụng khuyến mãi.",
+        });
+      }
+
+      for (const productId of discountProduct) {
+        const exists = await Product.findById(productId);
+        if (!exists) {
+          return resolve({
+            status: "ERR",
+            message: `Sản phẩm không tồn tại: ${productId}`,
+          });
+        }
+      }
+
+      const created = await Discount.create(newDiscount);
       resolve({
         status: "OK",
-        message: "Product created successfully",
-        data: createdDiscount,
+        message: "Tạo khuyến mãi thành công",
+        data: created,
       });
-    } catch (e) {
+    } catch (error) {
       reject({
         status: "ERR",
-        message: e.message || "Failed to create product",
+        message: error.message || "Lỗi khi tạo khuyến mãi",
       });
     }
   });
 };
 
-
-
-//update Discount
+// Cập nhật Discount
 const updateDiscount = (id, data) => {
   return new Promise(async (resolve, reject) => {
     try {
-      //check name created
-      const checkDiscount = await Discount.findOne({
-        _id: id,
-      });
-      //console.log("checkUser", checkUser);
-
-      //nếu Discount ko tồn tại
-      if (checkDiscount === null) {
-        resolve({
-          status: "OK",
-          message: "The Discount is not defined",
+      const discount = await Discount.findById(id);
+      if (!discount) {
+        return resolve({
+          status: "ERR",
+          message: "Không tìm thấy khuyến mãi",
         });
       }
 
-      const updatedDiscount = await Discount.findByIdAndUpdate(id, data, {
-        new: true,
-      });
-      //console.log("updatedDiscount", updatedDiscount);
+      // Kiểm tra ngày nếu có cập nhật
+      if (data.discountStartDate && data.discountEndDate) {
+        if (data.discountStartDate >= data.discountEndDate) {
+          return resolve({
+            status: "ERR",
+            message: "Ngày bắt đầu phải trước ngày kết thúc.",
+          });
+        }
+      }
+
+      // Kiểm tra sản phẩm nếu có cập nhật
+      if (data.discountProduct) {
+        if (!Array.isArray(data.discountProduct) || data.discountProduct.length === 0) {
+          return resolve({
+            status: "ERR",
+            message: "Phải chọn ít nhất một sản phẩm",
+          });
+        }
+
+        for (const productId of data.discountProduct) {
+          const exists = await Product.findById(productId);
+          if (!exists) {
+            return resolve({
+              status: "ERR",
+              message: `Sản phẩm không tồn tại: ${productId}`,
+            });
+          }
+        }
+      }
+
+      const updated = await Discount.findByIdAndUpdate(id, data, { new: true });
       resolve({
         status: "OK",
-        message: "SUCCESS",
-        data: updatedDiscount,
+        message: "Cập nhật khuyến mãi thành công",
+        data: updated,
       });
-    } catch (e) {
-      reject(e);
+    } catch (error) {
+      reject({
+        status: "ERR",
+        message: error.message || "Lỗi khi cập nhật khuyến mãi",
+      });
     }
   });
 };
 
-//delete Discount
+// Xóa Discount
 const deleteDiscount = (id) => {
   return new Promise(async (resolve, reject) => {
     try {
-      //check Discount created
-      const checkDiscount = await Discount.findOne({
-        _id: id,
-      });
-      //console.log("checkDiscount", checkDiscount);
-
-      //nếu Discount ko tồn tại
-      if (checkDiscount === null) {
-        resolve({
-          status: "OK",
-          message: "The Discount is not defined",
+      const discount = await Discount.findById(id);
+      if (!discount) {
+        return resolve({
+          status: "ERR",
+          message: "Không tìm thấy khuyến mãi",
         });
       }
 
       await Discount.findByIdAndDelete(id);
-      //console.log("updatedDiscount", updatedDiscount);
       resolve({
         status: "OK",
-        message: "DELETE Discount IS SUCCESS",
+        message: "Xóa khuyến mãi thành công",
       });
-    } catch (e) {
-      reject(e);
+    } catch (error) {
+      reject({
+        status: "ERR",
+        message: error.message || "Lỗi khi xóa khuyến mãi",
+      });
     }
   });
 };
 
-//get details Discount
+// Lấy chi tiết Discount theo ID
 const getDetailsDiscount = (id) => {
   return new Promise(async (resolve, reject) => {
     try {
-      //check email created
-      const Discount = await Discount.findOne({
-        _id: id,
-      });
-
-      //nếu Discount ko tồn tại
-      if (Discount === null) {
-        resolve({
-          status: "OK",
-          message: "The Discount is not defined",
+      const discount = await Discount.findById(id).populate("discountProduct");
+      if (!discount) {
+        return resolve({
+          status: "ERR",
+          message: "Không tìm thấy khuyến mãi",
         });
       }
 
       resolve({
         status: "OK",
-        message: "SUCCESS",
-        data: Discount,
+        message: "Lấy chi tiết khuyến mãi thành công",
+        data: discount,
       });
-    } catch (e) {
-      reject(e);
+    } catch (error) {
+      reject({
+        status: "ERR",
+        message: error.message || "Lỗi khi lấy chi tiết khuyến mãi",
+      });
     }
   });
 };
 
+// Lấy tất cả Discount có phân trang, lọc, sắp xếp
 const getAllDiscount = (limit, page, sort, filter) => {
   return new Promise(async (resolve, reject) => {
     try {
       const query = {};
 
-      // Add filtering condition
       if (filter) {
         const [field, value] = filter;
-        query[field] = { $regex: value, $options: "i" }; // Case-insensitive partial match
+        query[field] = { $regex: value, $options: "i" };
       }
 
-      const totalDiscount = await Discount.countDocuments(query);
+      const total = await Discount.countDocuments(query);
+      const sortOption = sort ? { [sort[1]]: sort[0] } : {};
 
-      // Add sorting condition
-      const sortCondition = sort ? { [sort[1]]: sort[0] } : {};
-
-      const allDiscount = await Discount.find(query)
+      const data = await Discount.find(query)
+        .populate("discountProduct")
         .limit(limit)
         .skip(page * limit)
-        .sort(sortCondition);
+        .sort(sortOption);
 
       resolve({
         status: "OK",
-        message: "Products retrieved successfully",
-        data: allDiscount,
-        total: totalDiscount,
-        pageCurrent: Number(page) + 1,
-        totalPage: Math.ceil(totalDiscount / limit),
+        message: "Lấy danh sách khuyến mãi thành công",
+        data,
+        total,
+        pageCurrent: page + 1,
+        totalPage: Math.ceil(total / limit),
       });
-    } catch (e) {
+    } catch (error) {
       reject({
         status: "ERR",
-        message: e.message || "Failed to get products",
+        message: error.message || "Lỗi khi lấy danh sách khuyến mãi",
       });
     }
   });
 };
 
-//apply discount
-const applyDiscount = (orderId, discountCode) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const discount = await Discount.findOne({ discountCode });
-      if (!discount || !discount.isActive) {
-        resolve({
-          status: "OK",
-          message: "Discount is invalid or inactive",
-        });
-        return;
-      }
-
-      // Logic to apply discount to order (có thể thêm vào logic tính toán discount vào đơn hàng)
-      resolve({
-        status: "OK",
-        message: "Discount applied successfully",
-        data: discount,
-      });
-    } catch (e) {
-      reject(e);
-    }
-  });
-};
-
-//validate discount
+// Kiểm tra mã Discount hợp lệ
 const validateDiscount = (discountCode) => {
   return new Promise(async (resolve, reject) => {
     try {
       const discount = await Discount.findOne({ discountCode });
+
       if (!discount || !discount.isActive) {
-        resolve({
+        return resolve({
           status: "OK",
-          message: "Invalid or inactive discount code",
+          message: "Mã giảm giá không hợp lệ hoặc đã hết hiệu lực",
         });
-        return;
       }
 
-      // Logic to validate discount
       resolve({
         status: "OK",
-        message: "Discount is valid",
+        message: "Mã giảm giá hợp lệ",
         data: discount,
       });
-    } catch (e) {
-      reject(e);
-    }
-  });
-};
-
-//get user discount
-const getUserDiscounts = (userId) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const discounts = await Discount.find({ applicableCategory: userId }); // Giả sử lọc theo userId hoặc thông tin người dùng
-      resolve({
-        status: "OK",
-        message: "User discounts fetched successfully",
-        data: discounts,
+    } catch (error) {
+      reject({
+        status: "ERR",
+        message: error.message || "Lỗi khi kiểm tra mã giảm giá",
       });
-    } catch (e) {
-      reject(e);
     }
   });
 };
 
-//active discount
+// Bật / Tắt trạng thái khuyến mãi
 const toggleDiscountStatus = (id) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const discount = await Discount.findOne({ _id: id });
+      const discount = await Discount.findById(id);
       if (!discount) {
-        resolve({
-          status: "OK",
-          message: "Discount not found",
+        return resolve({
+          status: "ERR",
+          message: "Không tìm thấy khuyến mãi",
         });
-        return;
       }
 
       discount.isActive = !discount.isActive;
@@ -257,11 +247,14 @@ const toggleDiscountStatus = (id) => {
 
       resolve({
         status: "OK",
-        message: "Discount status toggled",
+        message: "Cập nhật trạng thái khuyến mãi thành công",
         data: discount,
       });
-    } catch (e) {
-      reject(e);
+    } catch (error) {
+      reject({
+        status: "ERR",
+        message: error.message || "Lỗi khi cập nhật trạng thái",
+      });
     }
   });
 };
@@ -272,8 +265,6 @@ module.exports = {
   deleteDiscount,
   getDetailsDiscount,
   getAllDiscount,
-  applyDiscount,
   validateDiscount,
-  getUserDiscounts,
   toggleDiscountStatus,
 };

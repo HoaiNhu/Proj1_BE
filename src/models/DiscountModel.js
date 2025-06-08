@@ -21,11 +21,11 @@ const discountSchema = new mongoose.Schema(
       require: true
     },
     discountStartDate: {
-      type: String,
+      type: Date,
       required: true,
     },
     discountEndDate: {
-      type: String,
+      type: Date,
       required: true,
     },
     isActive: {
