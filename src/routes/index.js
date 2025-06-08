@@ -12,6 +12,7 @@ const Recommendation = require("./RecommendationRouter");
 const Rating = require("./RatingRouter");
 const AIRouter = require("./AIRouter");
 const ChatbotRouter = require("./ChatbotRouter");
+const QuizRouter = require("./QuizRouter");
 
 const routes = (app) => {
   app.use("/api/user", UserRouter);
@@ -27,6 +28,7 @@ const routes = (app) => {
   app.use("/api/rating", Rating);
   app.use("/api/ai", AIRouter);
   app.use("/api/chatbot", ChatbotRouter);
+  app.use("/api/quiz", QuizRouter);
 };
 
 module.exports = routes;
