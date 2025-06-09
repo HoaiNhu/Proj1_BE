@@ -32,11 +32,13 @@ const discountSchema = new mongoose.Schema(
       type: Boolean,
       default: true, // Trạng thái khuyến mãi (true: còn hiệu lực, false: vô hiệu)
     },
-    discountProduct:[{
-      type: mongoose.Schema.Types.ObjectId,
-            ref: "Product",
-            required: true,
-    }]
+    discountProduct: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "Product",
+      required: true,
+      default:[],
+    }
+
   },
   {
     timestamps: true, // Tự động thêm createdAt và updatedAt

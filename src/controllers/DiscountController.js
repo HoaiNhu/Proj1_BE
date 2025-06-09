@@ -1,36 +1,29 @@
 const DiscountService = require("../services/DiscountService");
-
+const Product= require("../models/ProductModel")
 ///create discount
 const createDiscount = async (req, res) => {
   try {
     //test input data
     const {
-      discountCode,
-      discountName,
-      discountValue,
-      discountProduct,
-      discountStartDate,
-      discountEndDate,
-    } = req.body;
-     console.log("DATA", req.body)
+  discountCode,
+  discountName,
+  discountValue,
+  discountStartDate,
+  discountEndDate,
+} = req.body;
 
-    if (
-      !discountCode ||
-      !discountName ||
-      !discountValue ||
-      !discountProduct||
-      !req.file||
-      !discountStartDate ||
-      !discountEndDate 
-    ) {
-      console.log("bhjtg", req.body)
-     
-      //check have
-      return res.status(400).json({
-        status: "ERR",
-        message: "The input is required",
-      });
-    }
+    const discountProductRaw = req.body.discountProduct;
+let discountProduct = [];
+
+try {
+  discountProduct = JSON.parse(discountProductRaw);
+} catch (err) {
+  return res.status(400).json({
+    status: "ERR",
+    message: "Invalid format for discountProduct",
+  });
+}
+
     const discountImage= req.file.path;
     const newDiscount={
       discountCode,
@@ -43,7 +36,7 @@ const createDiscount = async (req, res) => {
     }
     console.log("NEW", newDiscount)
     const response = await DiscountService.createDiscount(newDiscount);
-       console.log("NEW2", newDiscount)
+      //  console.log("NEW2", newDiscount)
     return res.status(200).json(response);
   } catch (e) {
     console.log("err", e)

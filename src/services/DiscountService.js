@@ -5,8 +5,9 @@ const Product = require("../models/ProductModel");
 const createDiscount = (newDiscount) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const { discountCode, discountName, discountStartDate, discountEndDate, discountProduct } = newDiscount;
-
+      console.log("DISCOUNT Code BI LOI: ")
+      const { discountCode, discountName, discountValue, discountStartDate, discountEndDate } = newDiscount;
+      console.log("DISCOUNT Code BI LOI: ", newDiscount)
       // Kiểm tra code trùng
       const existing = await Discount.findOne({ discountCode });
       if (existing) {
@@ -17,30 +18,29 @@ const createDiscount = (newDiscount) => {
       }
 
       // Kiểm tra logic ngày
-      if (discountStartDate >= discountEndDate) {
+     if (new Date(discountStartDate) > new Date(discountEndDate)) {
         return resolve({
           status: "ERR",
           message: "Ngày bắt đầu phải trước ngày kết thúc.",
         });
       }
-
-      // Kiểm tra danh sách sản phẩm không rỗng và tồn tại
-      if (!discountProduct || discountProduct.length === 0) {
+      else if (new Date(discountStartDate) < new Date()) {
         return resolve({
-          status: "ERR",
-          message: "Phải chọn ít nhất một sản phẩm áp dụng khuyến mãi.",
+          status:"ERR",
+          message:"Ngày bắt đầu phải trong tương lai"
         });
       }
 
-      for (const productId of discountProduct) {
-        const exists = await Product.findById(productId);
-        if (!exists) {
-          return resolve({
-            status: "ERR",
-            message: `Sản phẩm không tồn tại: ${productId}`,
-          });
-        }
-      }
+      for (const productId of newDiscount.discountProduct) {
+  const exists = await Product.findById(productId);
+  if (!exists) {
+    return resolve({
+      status: "ERR",
+      message: `Sản phẩm không tồn tại: ${productId}`,
+    });
+  }
+}
+
 
       const created = await Discount.create(newDiscount);
       resolve({
