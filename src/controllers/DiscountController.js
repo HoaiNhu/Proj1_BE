@@ -1,49 +1,42 @@
 const DiscountService = require("../services/DiscountService");
-
-//create discount
+const Product= require("../models/ProductModel")
+///create discount
 const createDiscount = async (req, res) => {
   try {
     //test input data
     const {
-      discountCode,
-      discountName,
-      discountValue,
-      applicableProduct,
-      discountStartDate,
-      discountEndDate,
-    } = req.body;
-    //console.log("req.body", req.body);
+  discountCode,
+  discountName,
+  discountValue,
+  discountStartDate,
+  discountEndDate,
+} = req.body;
 
-    if (
-      !discountCode ||
-      !discountName ||
-      !discountValue ||
-      !applicableProduct||
-      !req.file||
-      !discountStartDate ||
-      !discountEndDate 
-    ) {
-      console.log("bhjtg", req.body)
-     
-      //check have
-      return res.status(400).json({
-        status: "ERR",
-        message: "The input is required",
-      });
-    }
+    const discountProductRaw = req.body.discountProduct;
+let discountProduct = [];
+
+try {
+  discountProduct = JSON.parse(discountProductRaw);
+} catch (err) {
+  return res.status(400).json({
+    status: "ERR",
+    message: "Invalid format for discountProduct",
+  });
+}
+
     const discountImage= req.file.path;
     const newDiscount={
       discountCode,
       discountName,
       discountValue,
-      applicableProduct,
+      discountProduct,
       discountImage,
       discountStartDate,
       discountEndDate,
     }
     console.log("NEW", newDiscount)
     const response = await DiscountService.createDiscount(newDiscount);
-    console.log("NEW1")
+      //  console.log("NEW2", newDiscount)
     return res.status(200).json(response);
   } catch (e) {
     console.log("err", e)
@@ -53,168 +46,76 @@ const createDiscount = async (req, res) => {
   }
 };
 
-//update discount
+// Cập nhật khuyến mãi
 const updateDiscount = async (req, res) => {
   try {
-    const discountId = req.params.id;
-    if (!discountId) {
-      return res.status(400).json({
-        status: "ERR",
-        message: "Discount ID is required",
-      });
-    }
-    const response = await DiscountService.updateDiscount(discountId, req.body);
+    const { id } = req.params;
+    const response = await DiscountService.updateDiscount(id, req.body);
     return res.status(200).json(response);
-  } catch (e) {
-    return res.status(400).json({
-      status: "ERR",
-      message: e.message,
-    });
+  } catch (error) {
+    return res.status(500).json(error);
   }
 };
 
-//delete discount
+// Xóa khuyến mãi
 const deleteDiscount = async (req, res) => {
   try {
-    const discountId = req.params.id;
-    if (!discountId) {
-      return res.status(400).json({
-        status: "ERR",
-        message: "Discount ID is required",
-      });
-    }
-    const response = await DiscountService.deleteDiscount(discountId);
+    const { id } = req.params;
+    const response = await DiscountService.deleteDiscount(id);
     return res.status(200).json(response);
-  } catch (e) {
-    return res.status(400).json({
-      status: "ERR",
-      message: e.message,
-    });
+  } catch (error) {
+    return res.status(500).json(error);
   }
 };
 
-//get details discount
+// Lấy chi tiết khuyến mãi theo ID
 const getDetailsDiscount = async (req, res) => {
   try {
-    const discountId = req.params.id;
-    if (!discountId) {
-      return res.status(400).json({
-        status: "ERR",
-        message: "Discount ID is required",
-      });
-    }
-    const response = await DiscountService.getDetailsDiscount(discountId);
+    const { id } = req.params;
+    const response = await DiscountService.getDetailsDiscount(id);
     return res.status(200).json(response);
-  } catch (e) {
-    return res.status(400).json({
-      status: "ERR",
-      message: e.message,
-    });
+  } catch (error) {
+    return res.status(500).json(error);
   }
 };
 
-//get all discount
-
+// Lấy danh sách khuyến mãi (phân trang, lọc, sắp xếp)
 const getAllDiscount = async (req, res) => {
   try {
-    
-    const { limit, page, sort, filter } = req.query;
+    let { limit, page, sortBy, sortDir, filterField, filterValue } = req.query;
 
-    const response = await DiscountService.getAllDiscount(
-      Number(limit),
-      Number(page) ,
-      sort,
-      filter
-    );
+    limit = parseInt(limit) || 10;
+    page = parseInt(page) || 0;
+
+    const sort = sortBy && sortDir ? [sortDir.toLowerCase() === "desc" ? -1 : 1, sortBy] : null;
+    const filter = filterField && filterValue ? [filterField, filterValue] : null;
+
+    const response = await DiscountService.getAllDiscount(limit, page, sort, filter);
     return res.status(200).json(response);
-  } catch (e) {console.log(e)
-    return res.status(500).json({
-      message: e.message || "Something went wrong",
-      
-    });
+  } catch (error) {
+    return res.status(500).json(error);
   }
 };
 
-// Áp dụng mã giảm giá vào đơn hàng
-const applyDiscount = async (req, res) => {
-  try {
-    const { discountCode, productId } = req.body;
-
-    if (!discountCode || !productId) {
-      return res.status(400).json({
-        status: "ERR",
-        message: "Discount code and product ID are required",
-      });
-    }
-
-    const response = await DiscountService.applyDiscount(productId, discountCode);
-    return res.status(200).json(response);
-  } catch (e) {
-    return res.status(400).json({
-      status: "ERR",
-      message: e.message,
-    });
-  }
-};
-
-
-// Kiểm tra tính hợp lệ của mã giảm giá
+// Kiểm tra mã giảm giá hợp lệ
 const validateDiscount = async (req, res) => {
   try {
-    const { discountCode } = req.body;
-    if (!discountCode) {
-      return res.status(400).json({
-        status: "ERR",
-        message: "Discount code is required",
-      });
-    }
+    const { discountCode } = req.params;
     const response = await DiscountService.validateDiscount(discountCode);
     return res.status(200).json(response);
-  } catch (e) {
-    return res.status(400).json({
-      status: "ERR",
-      message: e.message,
-    });
+  } catch (error) {
+    return res.status(500).json(error);
   }
 };
 
-// Kích hoạt hoặc vô hiệu hóa mã giảm giá
+// Bật / Tắt trạng thái khuyến mãi
 const toggleDiscountStatus = async (req, res) => {
   try {
-    const discountId = req.params.id;
-    if (!discountId) {
-      return res.status(400).json({
-        status: "ERR",
-        message: "Discount ID is required",
-      });
-    }
-    const response = await DiscountService.toggleDiscountStatus(discountId);
+    const { id } = req.params;
+    const response = await DiscountService.toggleDiscountStatus(id);
     return res.status(200).json(response);
-  } catch (e) {
-    return res.status(400).json({
-      status: "ERR",
-      message: e.message,
-    });
-  }
-};
-
-//lấy mã giảm giá cho ng dùng cụ thể
-const getUserDiscounts = async (req, res) => {
-  try {
-    const userId = req.user.id; // Lấy ID người dùng từ token (do `authMiddleware` cung cấp)
-
-    // Gọi service để lấy danh sách mã giảm giá dành riêng cho người dùng
-    const response = await DiscountService.getUserDiscounts(userId);
-
-    return res.status(200).json({
-      status: "OK",
-      data: response,
-    });
-  } catch (e) {
-    return res.status(400).json({
-      status: "ERR",
-      message: e.message,
-    });
+  } catch (error) {
+    return res.status(500).json(error);
   }
 };
 
@@ -224,8 +125,6 @@ module.exports = {
   deleteDiscount,
   getDetailsDiscount,
   getAllDiscount,
-  applyDiscount,
   validateDiscount,
   toggleDiscountStatus,
-  getUserDiscounts,
 };

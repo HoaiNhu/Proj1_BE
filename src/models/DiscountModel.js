@@ -21,22 +21,24 @@ const discountSchema = new mongoose.Schema(
       require: true
     },
     discountStartDate: {
-      type: String,
+      type: Date,
       required: true,
     },
     discountEndDate: {
-      type: String,
+      type: Date,
       required: true,
     },
     isActive: {
       type: Boolean,
       default: true, // Trạng thái khuyến mãi (true: còn hiệu lực, false: vô hiệu)
     },
-    discountProduct:[{
-      type: mongoose.Schema.Types.ObjectId,
-            ref: "Product",
-            required: true,
-    }]
+    discountProduct: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "Product",
+      required: true,
+      default:[],
+    }
+
   },
   {
     timestamps: true, // Tự động thêm createdAt và updatedAt

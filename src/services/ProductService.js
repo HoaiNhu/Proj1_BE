@@ -1,3 +1,4 @@
+
 const Product = require("../models/ProductModel");
 
 /**
@@ -139,7 +140,11 @@ const getDetailsProduct = (id) => {
           message: "Product not found",
         });
       }
-
+     
+      if(!product.productDiscount){
+        product.productDiscount=0;
+      }
+      
       // Đảm bảo averageRating và totalRatings luôn có giá trị
       if (!product.averageRating) {
         product.averageRating = 5; // Giá trị mặc định
