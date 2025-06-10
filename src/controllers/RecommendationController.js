@@ -42,4 +42,34 @@ const logInteraction = async (req, res) => {
   }
 };
 
-module.exports = { getRecommendations, logInteraction };
+const getQuizRecommendations = async (req, res) => {
+  try {
+    console.log("getQuizRecommendations - Request body:", req.body);
+    const { user_id, session_id } = req.body;
+    console.log("user_id:", user_id, "session_id:", session_id);
+
+    if (!user_id || !session_id) {
+      return res.status(400).json({
+        status: "ERR",
+        message: "Thiếu user_id hoặc session_id",
+      });
+    }
+    const recommendations = await recommendationService.getQuizRecommendations(
+      user_id,
+      session_id
+    );
+    res.status(200).json({
+      status: "OK",
+      message: "Gợi ý từ quiz được lấy thành công",
+      data: recommendations,
+    });
+  } catch (error) {
+    console.error("Error in getQuizRecommendations:", error);
+    res.status(500).json({
+      status: "ERR",
+      message: error.message,
+    });
+  }
+};
+
+module.exports = { getRecommendations, logInteraction, getQuizRecommendations };

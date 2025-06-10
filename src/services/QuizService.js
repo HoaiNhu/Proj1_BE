@@ -1,6 +1,10 @@
 const Quiz = require("../models/QuizModel");
 const UserQuizResponse = require("../models/UserQuizResponseModel");
 const { v4: uuidv4 } = require("uuid");
+const axios = require("axios");
+
+const FASTAPI_URL =
+  process.env.FASTAPI_URL || "https://fastapi-rcm.onrender.com";
 
 class QuizService {
   // Tạo dữ liệu mẫu nếu chưa có
@@ -49,6 +53,13 @@ class QuizService {
 
         await Quiz.insertMany(sampleQuizzes);
         console.log("Sample quiz data created");
+
+        // Gọi API FastAPI để cập nhật mô hình khuyến nghị
+        try {
+          await axios.post(`${process.env.FASTAPI_URL}/update-model`);
+        } catch (error) {
+          console.error("Lỗi khi cập nhật mô hình khuyến nghị:", error);
+        }
       }
     } catch (error) {
       console.error("Error creating sample data:", error);
@@ -197,6 +208,20 @@ class QuizService {
       throw new Error("Error deleting quiz: " + error.message);
     }
   }
-}
 
+  // Lấy gợi ý dựa trên quiz
+  async getQuizRecommendations(userId, sessionId) {
+    try {
+      const response = await axios.post(`${FASTAPI_URL}/recommend/quiz`, {
+        user_id: userId,
+        session_id: sessionId,
+      });
+      return response.data.recommendations;
+    } catch (error) {
+      throw new Error(
+        error.response?.data?.detail || "Không thể lấy gợi ý từ quiz"
+      );
+    }
+  }
+}
 module.exports = new QuizService();

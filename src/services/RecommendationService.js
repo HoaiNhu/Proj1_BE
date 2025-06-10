@@ -29,4 +29,18 @@ const logInteraction = async (interaction) => {
   }
 };
 
-module.exports = { getRecommendations, logInteraction };
+const getQuizRecommendations = async (userId, sessionId) => {
+  try {
+    const response = await axios.post(`${FASTAPI_URL}/recommend/quiz`, {
+      user_id: userId,
+      session_id: sessionId,
+    });
+    return response.data.recommendations;
+  } catch (error) {
+    throw new Error(
+      error.response?.data?.detail || "Không thể lấy gợi ý từ quiz"
+    );
+  }
+};
+
+module.exports = { getRecommendations, logInteraction, getQuizRecommendations };

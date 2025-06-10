@@ -96,6 +96,24 @@ class QuizController {
       res.status(500).json({ message: error.message });
     }
   }
+
+  // Lấy gợi ý dựa trên quiz
+  async getQuizRecommendations(req, res) {
+    try {
+      const { sessionId } = req.body;
+      const userId = req.user.id; // Lấy userId từ middleware
+      if (!sessionId) {
+        return res.status(400).json({ message: "Thiếu sessionId" });
+      }
+      const recommendations = await QuizService.getQuizRecommendations(
+        userId,
+        sessionId
+      );
+      res.json({ recommendations });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  }
 }
 
 module.exports = new QuizController();

@@ -24,6 +24,12 @@ router.get(
   QuizController.getUserQuizHistory
 );
 
+router.post(
+  "/recommend/quiz",
+  authUserTokenMiddleware,
+  QuizController.getQuizRecommendations
+);
+
 // Admin routes
 router.post("/", authMiddleware, QuizController.createQuiz);
 router.put("/:quizId", authMiddleware, QuizController.updateQuiz);

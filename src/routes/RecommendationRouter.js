@@ -4,5 +4,6 @@ const recommendationController = require("../controllers/RecommendationControlle
 
 router.post("/recommend", recommendationController.getRecommendations);
 router.post("/interaction/log", recommendationController.logInteraction);
+router.post("/recommend/quiz", recommendationController.getQuizRecommendations);
 
 module.exports = router;
