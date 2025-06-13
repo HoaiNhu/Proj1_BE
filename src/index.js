@@ -8,7 +8,7 @@ const cookieParser = require("cookie-parser");
 const authRouter = require("../src/routes/AuthRouter");
 const path = require("path");
 const cron = require("node-cron"); // Thêm node-cron
-const Product = require("./models/product"); // Thêm model Product
+const Product = require("./models/ProductModel"); // Thêm model Product
 const DailyPuzzle = require("./models/DailyPuzzle"); // Thêm model DailyPuzzle
 const { generatePuzzle } = require("./utils/PuzzleGenerator"); // Thêm hàm generatePuzzle
 
@@ -71,14 +71,25 @@ mongoose
               availableProducts[
                 Math.floor(Math.random() * availableProducts.length)
               ];
-            const { puzzle, answer } = generatePuzzle(randomProduct.name);
+            const {
+              puzzle,
+              answer,
+              originalName,
+              missingChars,
+              hiddenIndices,
+            } = generatePuzzle(randomProduct.productName);
             await DailyPuzzle.create({
               date: today,
               productId: randomProduct._id,
               puzzle,
               answer,
+              originalProductName: originalName,
+              missingChars,
+              hiddenIndices,
             });
-            console.log(`Created puzzle for ${today}: ${puzzle}`);
+            console.log(
+              `Created puzzle for ${today}: ${puzzle} -> ${originalName}`
+            );
           } else {
             console.log("No available products for puzzle.");
           }
