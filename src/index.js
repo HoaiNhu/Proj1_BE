@@ -7,6 +7,10 @@ const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const authRouter = require("../src/routes/AuthRouter");
 const path = require("path");
+const cron = require("node-cron"); // Thêm node-cron
+const Product = require("./models/product"); // Thêm model Product
+const DailyPuzzle = require("./models/DailyPuzzle"); // Thêm model DailyPuzzle
+const { generatePuzzle } = require("./utils/PuzzleGenerator"); // Thêm hàm generatePuzzle
 
 dotenv.config();
 
@@ -46,6 +50,43 @@ mongoose
   .connect(`${process.env.MONGO_DB}`)
   .then(() => {
     console.log("Connect db successful");
+    // Lên lịch tạo ô chữ mới mỗi ngày lúc 00:00
+    cron.schedule("0 0 * * *", async () => {
+      try {
+        const today = new Date().toISOString().split("T")[0];
+        const existing = await DailyPuzzle.findOne({ date: today });
+        if (!existing) {
+          const recentProducts = await Product.find()
+            .sort({ createdAt: -1 })
+            .limit(10);
+          const usedProductIds = await DailyPuzzle.find()
+            .sort({ date: -1 })
+            .limit(10)
+            .select("productId");
+          const availableProducts = recentProducts.filter(
+            (p) => !usedProductIds.some((id) => id.equals(p._id))
+          );
+          if (availableProducts.length > 0) {
+            const randomProduct =
+              availableProducts[
+                Math.floor(Math.random() * availableProducts.length)
+              ];
+            const { puzzle, answer } = generatePuzzle(randomProduct.name);
+            await DailyPuzzle.create({
+              date: today,
+              productId: randomProduct._id,
+              puzzle,
+              answer,
+            });
+            console.log(`Created puzzle for ${today}: ${puzzle}`);
+          } else {
+            console.log("No available products for puzzle.");
+          }
+        }
+      } catch (err) {
+        console.error("Error in daily puzzle cron job:", err);
+      }
+    });
   })
   .catch((err) => {
     console.log(err);
