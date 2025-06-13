@@ -1,48 +1,12 @@
 const DiscountService = require("../services/DiscountService");
-const Product= require("../models/ProductModel")
-///create discount
+
+// Tạo khuyến mãi mới
 const createDiscount = async (req, res) => {
   try {
-    //test input data
-    const {
-  discountCode,
-  discountName,
-  discountValue,
-  discountStartDate,
-  discountEndDate,
-} = req.body;
-
-    const discountProductRaw = req.body.discountProduct;
-let discountProduct = [];
-
-try {
-  discountProduct = JSON.parse(discountProductRaw);
-} catch (err) {
-  return res.status(400).json({
-    status: "ERR",
-    message: "Invalid format for discountProduct",
-  });
-}
-
-    const discountImage= req.file.path;
-    const newDiscount={
-      discountCode,
-      discountName,
-      discountValue,
-      discountProduct,
-      discountImage,
-      discountStartDate,
-      discountEndDate,
-    }
-    console.log("NEW", newDiscount)
-    const response = await DiscountService.createDiscount(newDiscount);
-      //  console.log("NEW2", newDiscount)
-    return res.status(200).json(response);
-  } catch (e) {
-    console.log("err", e)
-    return res.status(404).json({
-      message: e,
-    });
+    const result = await DiscountService.createDiscount(req.body);
+    return res.status(result.status === "OK" ? 200 : 400).json(result);
+  } catch (error) {
+    return res.status(500).json({ status: "ERR", message: error.message });
   }
 };
 
@@ -50,10 +14,10 @@ try {
 const updateDiscount = async (req, res) => {
   try {
     const { id } = req.params;
-    const response = await DiscountService.updateDiscount(id, req.body);
-    return res.status(200).json(response);
+    const result = await DiscountService.updateDiscount(id, req.body);
+    return res.status(result.status === "OK" ? 200 : 400).json(result);
   } catch (error) {
-    return res.status(500).json(error);
+    return res.status(500).json({ status: "ERR", message: error.message });
   }
 };
 
@@ -61,61 +25,72 @@ const updateDiscount = async (req, res) => {
 const deleteDiscount = async (req, res) => {
   try {
     const { id } = req.params;
-    const response = await DiscountService.deleteDiscount(id);
-    return res.status(200).json(response);
+    const result = await DiscountService.deleteDiscount(id);
+    return res.status(result.status === "OK" ? 200 : 400).json(result);
   } catch (error) {
-    return res.status(500).json(error);
+    return res.status(500).json({ status: "ERR", message: error.message });
   }
 };
 
-// Lấy chi tiết khuyến mãi theo ID
+// Lấy chi tiết khuyến mãi
 const getDetailsDiscount = async (req, res) => {
   try {
     const { id } = req.params;
-    const response = await DiscountService.getDetailsDiscount(id);
-    return res.status(200).json(response);
+    const result = await DiscountService.getDetailsDiscount(id);
+    return res.status(result.status === "OK" ? 200 : 400).json(result);
   } catch (error) {
-    return res.status(500).json(error);
+    return res.status(500).json({ status: "ERR", message: error.message });
   }
 };
 
-// Lấy danh sách khuyến mãi (phân trang, lọc, sắp xếp)
+// Lấy tất cả khuyến mãi
 const getAllDiscount = async (req, res) => {
   try {
-    let { limit, page, sortBy, sortDir, filterField, filterValue } = req.query;
-
-    limit = parseInt(limit) || 10;
-    page = parseInt(page) || 0;
-
-    const sort = sortBy && sortDir ? [sortDir.toLowerCase() === "desc" ? -1 : 1, sortBy] : null;
-    const filter = filterField && filterValue ? [filterField, filterValue] : null;
-
-    const response = await DiscountService.getAllDiscount(limit, page, sort, filter);
-    return res.status(200).json(response);
+    const { limit = 10, page = 0, sort, filter } = req.query;
+    // sort: ["asc", "discountValue"], filter: ["discountName", "Summer"]
+    const parsedSort = sort ? JSON.parse(sort) : null;
+    const parsedFilter = filter ? JSON.parse(filter) : null;
+    const result = await DiscountService.getAllDiscount(
+      parseInt(limit),
+      parseInt(page),
+      parsedSort,
+      parsedFilter
+    );
+    return res.status(200).json(result);
   } catch (error) {
-    return res.status(500).json(error);
+    return res.status(500).json({ status: "ERR", message: error.message });
   }
 };
 
 // Kiểm tra mã giảm giá hợp lệ
 const validateDiscount = async (req, res) => {
   try {
-    const { discountCode } = req.params;
-    const response = await DiscountService.validateDiscount(discountCode);
-    return res.status(200).json(response);
+    const { code } = req.query;
+    const result = await DiscountService.validateDiscount(code);
+    return res.status(200).json(result);
   } catch (error) {
-    return res.status(500).json(error);
+    return res.status(500).json({ status: "ERR", message: error.message });
   }
 };
 
-// Bật / Tắt trạng thái khuyến mãi
+// Bật/tắt trạng thái khuyến mãi
 const toggleDiscountStatus = async (req, res) => {
   try {
     const { id } = req.params;
-    const response = await DiscountService.toggleDiscountStatus(id);
-    return res.status(200).json(response);
+    const result = await DiscountService.toggleDiscountStatus(id);
+    return res.status(result.status === "OK" ? 200 : 400).json(result);
   } catch (error) {
-    return res.status(500).json(error);
+    return res.status(500).json({ status: "ERR", message: error.message });
+  }
+};
+
+// Lấy danh sách sản phẩm có khuyến mãi mạnh nhất
+const getProductsWithBestDiscount = async (req, res) => {
+  try {
+    const result = await DiscountService.getProductsWithBestDiscount();
+    return res.status(200).json(result);
+  } catch (error) {
+    return res.status(500).json({ status: "ERR", message: error.message });
   }
 };
 
@@ -127,4 +102,5 @@ module.exports = {
   getAllDiscount,
   validateDiscount,
   toggleDiscountStatus,
+  getProductsWithBestDiscount,
 };
