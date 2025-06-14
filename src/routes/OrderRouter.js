@@ -1,7 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const orderController = require("../controllers/OrderController");
-const { authMiddleware } = require("../middleware/authMiddleware");
+const {
+  authMiddleware,
+  authUserTokenMiddleware,
+} = require("../middleware/authMiddleware");
 
 // Tạo đơn hàng mới
 router.post("/create-order", orderController.createOrder);
@@ -26,6 +29,20 @@ router.put(
   "/update-order-status/:id",
   authMiddleware,
   orderController.updateOrderStatus
+);
+
+// Trừ xu khi thanh toán đơn hàng
+router.post(
+  "/deduct-coins",
+  authUserTokenMiddleware,
+  orderController.deductCoinsForOrder
+);
+
+// Đổi xu thành tiền cho đơn hàng
+router.post(
+  "/apply-coins",
+  authUserTokenMiddleware,
+  orderController.applyCoinsToOrder
 );
 
 module.exports = router;

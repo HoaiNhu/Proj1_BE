@@ -1,5 +1,6 @@
 const Status = require("../models/StatusModel");
 const OrderService = require("../services/OrderService");
+const UserAssetsService = require("../services/UserAssetsService");
 
 // Tạo đơn hàng mới
 // const createOrder = async (req, res) => {
@@ -295,6 +296,75 @@ const updateOrderStatus = async (req, res) => {
   }
 };
 
+// Trừ xu khi thanh toán đơn hàng
+const deductCoinsForOrder = async (req, res) => {
+  try {
+    const userId = req.user.id; // Lấy từ middleware auth
+    const { amount } = req.body;
+
+    if (!amount || amount <= 0) {
+      return res.status(400).json({
+        status: "ERR",
+        message: "Số xu không hợp lệ",
+      });
+    }
+
+    // Trừ xu từ tài khoản user
+    const updatedAssets = await UserAssetsService.deductCoins(userId, amount);
+
+    res.json({
+      status: "OK",
+      message: `Đã trừ ${amount} xu thành công`,
+      data: {
+        remainingCoins: updatedAssets.coins,
+        deductedAmount: amount,
+      },
+    });
+  } catch (error) {
+    console.error("Error in deductCoinsForOrder:", error);
+    res.status(400).json({
+      status: "ERR",
+      message: error.message || "Lỗi server",
+    });
+  }
+};
+
+// Đổi xu thành tiền cho đơn hàng
+const applyCoinsToOrder = async (req, res) => {
+  try {
+    const userId = req.user.id; // Lấy từ middleware auth
+    const { orderId, coinsToUse } = req.body;
+
+    if (!orderId) {
+      return res.status(400).json({
+        status: "ERR",
+        message: "Order ID là bắt buộc",
+      });
+    }
+
+    if (coinsToUse === undefined || coinsToUse === null) {
+      return res.status(400).json({
+        status: "ERR",
+        message: "Số xu muốn sử dụng là bắt buộc",
+      });
+    }
+
+    const response = await OrderService.applyCoinsToOrder(
+      orderId,
+      userId,
+      coinsToUse
+    );
+
+    res.json(response);
+  } catch (error) {
+    console.error("Error in applyCoinsToOrder:", error);
+    res.status(400).json({
+      status: "ERR",
+      message: error.message || "Lỗi server",
+    });
+  }
+};
+
 module.exports = {
   createOrder,
   updateOrder,
@@ -303,4 +373,6 @@ module.exports = {
   getAllOrders,
   getOrdersByUser,
   updateOrderStatus,
+  deductCoinsForOrder,
+  applyCoinsToOrder,
 };

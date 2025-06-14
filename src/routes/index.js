@@ -13,6 +13,8 @@ const Rating = require("./RatingRouter");
 const AIRouter = require("./AIRouter");
 const ChatbotRouter = require("./ChatbotRouter");
 const QuizRouter = require("./QuizRouter");
+const PuzzleRouter = require("./PuzzleRouter");
+const UserAssetsRouter = require("./UserAssetsRouter");
 
 const routes = (app) => {
   app.use("/api/user", UserRouter);
@@ -29,6 +31,8 @@ const routes = (app) => {
   app.use("/api/ai", AIRouter);
   app.use("/api/chatbot", ChatbotRouter);
   app.use("/api/quiz", QuizRouter);
+  app.use("/api/puzzle", PuzzleRouter);
+  app.use("/api/user-assets", UserAssetsRouter);
 };
 
 module.exports = routes;

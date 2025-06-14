@@ -65,6 +65,7 @@ const orderSchema = new mongoose.Schema(
     shippingPrice: { type: Number, required: true, default: 30000 }, // Phí vận chuyển cố định
     totalItemPrice: { type: Number, required: true }, // Tổng tiền hàng
     totalPrice: { type: Number, required: true }, // Tổng thanh toán (bao gồm vận chuyển)
+    coinsUsed: { type: Number, default: 0 }, // Số xu đã sử dụng cho đơn hàng này
 
     // Thời gian thanh toán và giao hàng
     isPaid: { type: Boolean, default: false },
@@ -88,8 +89,9 @@ orderSchema.pre("save", function (next) {
     (total, item) => total + item.total,
     0
   );
-  // Tính tổng thanh toán
-  order.totalPrice = order.totalItemPrice + order.shippingPrice;
+  // Tính tổng thanh toán (trừ đi số xu đã sử dụng)
+  order.totalPrice =
+    order.totalItemPrice + order.shippingPrice - order.coinsUsed;
   next();
 });
 
