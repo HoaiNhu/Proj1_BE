@@ -1,5 +1,6 @@
 const Order = require("../models/OrderModel");
 const Status = require("../models/StatusModel");
+const UserAssetsService = require("./UserAssetsService");
 const mongoose = require("mongoose");
 
 // Kiểm tra tồn tại đơn hàng
@@ -311,6 +312,81 @@ const updateOrderStatus = (id, statusId) => {
   });
 };
 
+// Đổi xu thành tiền cho đơn hàng
+const applyCoinsToOrder = async (orderId, userId, coinsToUse) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      // Kiểm tra đơn hàng tồn tại
+      const order = await checkOrderExistence(orderId);
+
+      // Kiểm tra đơn hàng thuộc về user
+      if (order.userId && order.userId.toString() !== userId.toString()) {
+        return reject({
+          status: "ERR",
+          message: "Bạn không có quyền thay đổi đơn hàng này",
+        });
+      }
+
+      // Kiểm tra số xu hợp lệ
+      if (!coinsToUse || coinsToUse < 0) {
+        return reject({
+          status: "ERR",
+          message: "Số xu phải lớn hơn hoặc bằng 0",
+        });
+      }
+
+      // Kiểm tra số xu hiện có của user
+      const userCoins = await UserAssetsService.checkCoins(userId);
+      if (userCoins < coinsToUse) {
+        return reject({
+          status: "ERR",
+          message: `Bạn chỉ có ${userCoins} xu, không đủ để sử dụng ${coinsToUse} xu`,
+        });
+      }
+
+      // Kiểm tra số xu không vượt quá tổng tiền đơn hàng
+      const maxCoinsCanUse = order.totalItemPrice + order.shippingPrice;
+      if (coinsToUse > maxCoinsCanUse) {
+        return reject({
+          status: "ERR",
+          message: `Số xu tối đa có thể sử dụng là ${maxCoinsCanUse} xu`,
+        });
+      }
+
+      // Cập nhật đơn hàng với số xu mới
+      const updatedOrder = await Order.findByIdAndUpdate(
+        orderId,
+        {
+          coinsUsed: coinsToUse,
+          totalPrice: order.totalItemPrice + order.shippingPrice - coinsToUse,
+        },
+        { new: true }
+      );
+
+      // Trừ xu từ tài khoản user
+      if (coinsToUse > 0) {
+        await UserAssetsService.deductCoins(userId, coinsToUse);
+      }
+
+      resolve({
+        status: "OK",
+        message: `Đã áp dụng ${coinsToUse} xu cho đơn hàng`,
+        data: {
+          order: updatedOrder,
+          coinsUsed: coinsToUse,
+          remainingCoins: userCoins - coinsToUse,
+          newTotalPrice: updatedOrder.totalPrice,
+        },
+      });
+    } catch (error) {
+      reject({
+        status: "ERR",
+        message: error.message || "Có lỗi xảy ra khi áp dụng xu",
+      });
+    }
+  });
+};
+
 module.exports = {
   createOrder,
   updateOrder,
@@ -319,4 +395,5 @@ module.exports = {
   getAllOrders,
   getOrdersByUser,
   updateOrderStatus,
+  applyCoinsToOrder,
 };
