@@ -41,4 +41,7 @@ router.post("/validate-discount", discountController.validateDiscount);
 // Bật / tắt trạng thái khuyến mãi
 router.patch("/toggle-status/:id", authMiddleware, discountController.toggleDiscountStatus);
 
+// Lấy danh sách sản phẩm có khuyến mãi tốt nhất
+router.get("/get-best-discount-products",discountController.getProductsWithBestDiscount);
+
 module.exports = router;

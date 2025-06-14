@@ -3,12 +3,20 @@ const DiscountService = require("../services/DiscountService");
 // Tạo khuyến mãi mới
 const createDiscount = async (req, res) => {
   try {
-    const result = await DiscountService.createDiscount(req.body);
+    const data = req.body;
+
+    // Nếu có file ảnh thì gán vào discountImage
+    if (req.file) {
+      data.discountImage = req.file.path; // hoặc req.file.filename tùy bạn muốn lưu gì
+    }
+
+    const result = await DiscountService.createDiscount(data);
     return res.status(result.status === "OK" ? 200 : 400).json(result);
   } catch (error) {
     return res.status(500).json({ status: "ERR", message: error.message });
   }
 };
+
 
 // Cập nhật khuyến mãi
 const updateDiscount = async (req, res) => {
