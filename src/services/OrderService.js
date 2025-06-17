@@ -335,18 +335,12 @@ const applyCoinsToOrder = async (orderId, userId, coinsToUse) => {
         });
       }
 
-      // Lấy số xu đã áp dụng trước đó
-      const previousCoinsUsed = order.coinsUsed || 0;
-
-      // Tính số xu mới cần trừ (chỉ số xu tăng thêm)
-      const newCoinsToDeduct = coinsToUse - previousCoinsUsed;
-
       // Kiểm tra số xu hiện có của user
       const userCoins = await UserAssetsService.checkCoins(userId);
-      if (userCoins < newCoinsToDeduct) {
+      if (userCoins < coinsToUse) {
         return reject({
           status: "ERR",
-          message: `Bạn chỉ có ${userCoins} xu, không đủ để sử dụng thêm ${newCoinsToDeduct} xu`,
+          message: `Bạn chỉ có ${userCoins} xu, không đủ để sử dụng ${coinsToUse} xu`,
         });
       }
 
@@ -369,9 +363,9 @@ const applyCoinsToOrder = async (orderId, userId, coinsToUse) => {
         { new: true }
       );
 
-      // Chỉ trừ số xu mới thêm vào từ tài khoản user
-      if (newCoinsToDeduct > 0) {
-        await UserAssetsService.deductCoins(userId, newCoinsToDeduct);
+      // Trừ xu từ tài khoản user
+      if (coinsToUse > 0) {
+        await UserAssetsService.deductCoins(userId, coinsToUse);
       }
 
       resolve({
@@ -380,9 +374,8 @@ const applyCoinsToOrder = async (orderId, userId, coinsToUse) => {
         data: {
           order: updatedOrder,
           coinsUsed: coinsToUse,
-          remainingCoins: userCoins - newCoinsToDeduct,
+          remainingCoins: userCoins - coinsToUse,
           newTotalPrice: updatedOrder.totalPrice,
-          coinsDeducted: newCoinsToDeduct, // Số xu thực tế đã trừ
         },
       });
     } catch (error) {
@@ -393,6 +386,8 @@ const applyCoinsToOrder = async (orderId, userId, coinsToUse) => {
     }
   });
 };
+
+// Lấy danh sách các khuyến mãi và gán giá trị khuyến mãi cho order
 
 module.exports = {
   createOrder,
