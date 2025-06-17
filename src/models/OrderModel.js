@@ -15,6 +15,7 @@ const orderSchema = new mongoose.Schema(
         },
         quantity: { type: Number, required: true }, // Số lượng
         total: { type: Number, required: false }, // Tổng tiền cho sản phẩm
+        discountPercent: { type: Number, default:0 }, //Gia tri discount
       },
     ],
 
