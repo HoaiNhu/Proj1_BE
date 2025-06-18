@@ -2,7 +2,7 @@ const Order = require("../models/OrderModel");
 const Status = require("../models/StatusModel");
 const UserAssetsService = require("./UserAssetsService");
 const mongoose = require("mongoose");
-
+const axios = require("axios");
 // Kiểm tra tồn tại đơn hàng
 const checkOrderExistence = async (id) => {
   const existingOrder = await Order.findById(id);
@@ -127,7 +127,13 @@ const createOrder = async (orderData) => {
 
       // Gọi API FastAPI để cập nhật mô hình khuyến nghị
       try {
-        await axios.post(`${process.env.FASTAPI_URL}/update-model`);
+        await axios.post(
+          `${process.env.FASTAPI_URL}/update-model`,
+          {},
+          {
+            timeout: 30000, // 30 giây timeout
+          }
+        );
       } catch (error) {
         console.error("Lỗi khi cập nhật mô hình khuyến nghị:", error);
       }

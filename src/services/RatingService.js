@@ -1,3 +1,4 @@
+const axios = require("axios");
 const Rating = require("../models/RatingModel");
 const Product = require("../models/ProductModel");
 
@@ -77,7 +78,14 @@ const createRating = async (ratingData) => {
 
       // Gọi API FastAPI để cập nhật mô hình khuyến nghị
       try {
-        await axios.post(`${process.env.FASTAPI_URL}/update-model`);
+        await axios.post(
+          `${process.env.FASTAPI_URL}/update-model`,
+          {},
+          {
+            timeout: 30000, // 30 giây timeout
+          }
+        );
+        console.log("update model success");
       } catch (error) {
         console.error("Lỗi khi cập nhật mô hình khuyến nghị:", error);
       }
@@ -175,6 +183,20 @@ const updateRating = async (ratingId, userId, updateData) => {
         averageRating: Number(averageRating.toFixed(1)),
         totalRatings: allRatings.length,
       });
+
+      // Gọi API FastAPI để cập nhật mô hình khuyến nghị
+      try {
+        await axios.post(
+          `${process.env.FASTAPI_URL}/update-model`,
+          {},
+          {
+            timeout: 30000, // 30 giây timeout
+          }
+        );
+        console.log("update model success");
+      } catch (error) {
+        console.error("Lỗi khi cập nhật mô hình khuyến nghị:", error);
+      }
 
       resolve({
         status: "OK",
