@@ -45,4 +45,14 @@ router.post(
   orderController.applyCoinsToOrder
 );
 
+// Lấy top 5 đơn hàng mới nhất
+router.get("/recent-orders", authMiddleware, orderController.getRecentOrders);
+
+// Lấy top 10 sản phẩm bán chạy nhất
+router.get(
+  "/best-selling-products",
+  authMiddleware,
+  orderController.getBestSellingProducts
+);
+
 module.exports = router;

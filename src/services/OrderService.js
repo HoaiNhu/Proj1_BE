@@ -394,6 +394,96 @@ const applyCoinsToOrder = async (orderId, userId, coinsToUse) => {
 };
 
 // Lấy danh sách các khuyến mãi và gán giá trị khuyến mãi cho order
+// Lấy top 5 đơn hàng mới nhất
+const getRecentOrders = (limit = 5) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const orders = await Order.find()
+        .populate("orderItems.product", "name images price")
+        .populate("userId", "name email")
+        .populate("status", "statusName statusCode")
+        .sort({ createdAt: -1 })
+        .limit(limit);
+
+      resolve({
+        status: "OK",
+        message: `Top ${limit} recent orders retrieved successfully`,
+        data: orders,
+      });
+    } catch (error) {
+      reject({
+        status: "ERR",
+        message: error.message || "Failed to retrieve recent orders",
+      });
+    }
+  });
+};
+
+// Lấy top 10 sản phẩm bán chạy nhất
+const getBestSellingProducts = (limit = 10) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const bestSelling = await Order.aggregate([
+        // Unwind orderItems array để xử lý từng sản phẩm
+        { $unwind: "$orderItems" },
+
+        // Group theo product và tính tổng quantity
+        {
+          $group: {
+            _id: "$orderItems.product",
+            totalQuantitySold: { $sum: "$orderItems.quantity" },
+            totalRevenue: { $sum: "$orderItems.total" },
+            orderCount: { $sum: 1 },
+          },
+        },
+
+        // Sort theo quantity bán được (giảm dần)
+        { $sort: { totalQuantitySold: -1 } },
+
+        // Limit kết quả
+        { $limit: limit },
+
+        // Lookup để lấy thông tin chi tiết sản phẩm
+        {
+          $lookup: {
+            from: "products",
+            localField: "_id",
+            foreignField: "_id",
+            as: "productDetails",
+          },
+        },
+
+        // Unwind productDetails
+        { $unwind: "$productDetails" },
+
+        // Project các field cần thiết
+        {
+          $project: {
+            _id: 1,
+            totalQuantitySold: 1,
+            totalRevenue: 1,
+            orderCount: 1,
+            productName: "$productDetails.name",
+            productImages: "$productDetails.images",
+            productPrice: "$productDetails.price",
+            productType: "$productDetails.type",
+          },
+        },
+      ]);
+
+      resolve({
+        status: "OK",
+        message: `Top ${limit} best selling products retrieved successfully`,
+        data: bestSelling,
+      });
+    } catch (error) {
+      reject({
+        status: "ERR",
+        message: error.message || "Failed to retrieve best selling products",
+      });
+    }
+  });
+};
 
 module.exports = {
   createOrder,
@@ -404,4 +494,6 @@ module.exports = {
   getOrdersByUser,
   updateOrderStatus,
   applyCoinsToOrder,
+  getRecentOrders,
+  getBestSellingProducts,
 };

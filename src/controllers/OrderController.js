@@ -365,6 +365,52 @@ const applyCoinsToOrder = async (req, res) => {
   }
 };
 
+// Lấy top 5 đơn hàng mới nhất
+const getRecentOrders = async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 5;
+
+    if (limit <= 0 || limit > 20) {
+      return res.status(400).json({
+        status: "ERR",
+        message: "Limit must be between 1 and 20",
+      });
+    }
+
+    const response = await OrderService.getRecentOrders(limit);
+    return res.status(200).json(response);
+  } catch (error) {
+    console.error("Error in getRecentOrders:", error);
+    return res.status(500).json({
+      status: "ERR",
+      message: error.message || "Internal server error",
+    });
+  }
+};
+
+// Lấy top 10 sản phẩm bán chạy nhất
+const getBestSellingProducts = async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 10;
+
+    if (limit <= 0 || limit > 50) {
+      return res.status(400).json({
+        status: "ERR",
+        message: "Limit must be between 1 and 50",
+      });
+    }
+
+    const response = await OrderService.getBestSellingProducts(limit);
+    return res.status(200).json(response);
+  } catch (error) {
+    console.error("Error in getBestSellingProducts:", error);
+    return res.status(500).json({
+      status: "ERR",
+      message: error.message || "Internal server error",
+    });
+  }
+};
+
 module.exports = {
   createOrder,
   updateOrder,
@@ -375,4 +421,6 @@ module.exports = {
   updateOrderStatus,
   deductCoinsForOrder,
   applyCoinsToOrder,
+  getRecentOrders,
+  getBestSellingProducts,
 };

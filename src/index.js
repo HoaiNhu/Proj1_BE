@@ -26,7 +26,8 @@ app.use(
     origin:
       process.env.NODE_ENV === "production"
         ? "https://avocado-app.onrender.com"
-        : "http://localhost:3000", // Cho phép cả local và production
+        : // "http://localhost:3000"
+          "http://localhost:3100 ", // Cho phép cả local và production
     credentials: true, // Cho phép gửi cookie
   })
 );
