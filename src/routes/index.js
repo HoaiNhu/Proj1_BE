@@ -15,6 +15,7 @@ const ChatbotRouter = require("./ChatbotRouter");
 const QuizRouter = require("./QuizRouter");
 const PuzzleRouter = require("./PuzzleRouter");
 const UserAssetsRouter = require("./UserAssetsRouter");
+const SearchHistoryRouter = require("./SearchHistoryRouter");
 
 const routes = (app) => {
   app.use("/api/user", UserRouter);
@@ -33,6 +34,7 @@ const routes = (app) => {
   app.use("/api/quiz", QuizRouter);
   app.use("/api/puzzle", PuzzleRouter);
   app.use("/api/user-assets", UserAssetsRouter);
+  app.use("/api/search-history", SearchHistoryRouter);
 };
 
 module.exports = routes;

@@ -1,9 +1,18 @@
 const mongoose = require("mongoose");
 
-const SearchHistorySchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  query: { type: String, required: true },
-  timestamp: { type: Date, default: Date.now },
-});
+const SearchHistorySchema = new mongoose.Schema(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    query: { type: String, required: true },
+  },
+  {
+    timestamps: true,
+  }
+);
 
-module.exports = mongoose.model("SearchHistory", SearchHistorySchema);
+const SearchHistory = mongoose.model("SearchHistory", SearchHistorySchema);
+module.exports = SearchHistory;
