@@ -409,6 +409,30 @@ const getIntroduce = async (req, res) => {
   }
 };
 
+// Lấy danh sách và số lượng user mới trong tuần hiện tại
+const getWeeklyNewUsers = async (req, res) => {
+  try {
+    const response = await UserServices.getWeeklyNewUsers();
+    return res.status(200).json(response);
+  } catch (e) {
+    return res.status(404).json({
+      message: e,
+    });
+  }
+};
+
+// Lấy user mới của tuần trước
+const getPreviousWeekNewUsers = async (req, res) => {
+  try {
+    const response = await UserServices.getPreviousWeekNewUsers();
+    return res.status(200).json(response);
+  } catch (e) {
+    return res.status(404).json({
+      message: e,
+    });
+  }
+};
+
 module.exports = {
   createUser,
   loginUser,
@@ -427,4 +451,6 @@ module.exports = {
   getAllNews,
   getIntroduce,
   logoutUser,
+  getWeeklyNewUsers,
+  getPreviousWeekNewUsers,
 };

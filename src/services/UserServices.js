@@ -3,7 +3,7 @@ const bcrypt = require("bcrypt");
 const { generalAccessToken, generalRefreshToken } = require("./JwtService");
 
 //tạo user
-const createUser = (newUser) => { 
+const createUser = (newUser) => {
   return new Promise(async (resolve, reject) => {
     const {
       familyName,
@@ -247,6 +247,73 @@ const getDetailsUser = (id) => {
   });
 };
 
+// get users created in current week (Mon 00:00 to Sun 23:59:59.999)
+const getWeeklyNewUsers = () => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const now = new Date();
+      const day = now.getDay(); // 0=Sun,1=Mon,...
+      const diffToMonday = (day + 6) % 7; // days since Monday
+      const startOfWeek = new Date(now);
+      startOfWeek.setHours(0, 0, 0, 0);
+      startOfWeek.setDate(now.getDate() - diffToMonday);
+
+      const endOfWeek = new Date(startOfWeek);
+      endOfWeek.setDate(startOfWeek.getDate() + 6);
+      endOfWeek.setHours(23, 59, 59, 999);
+
+      const users = await User.find({
+        createdAt: { $gte: startOfWeek, $lte: endOfWeek },
+      }).sort({ createdAt: -1 });
+
+      resolve({
+        status: "OK",
+        message: "Weekly new users retrieved successfully",
+        total: users.length,
+        data: users,
+        range: { start: startOfWeek, end: endOfWeek },
+      });
+    } catch (e) {
+      reject(e);
+    }
+  });
+};
+
+// get users created in previous week (Mon 00:00 to Sun 23:59:59.999 of last week)
+const getPreviousWeekNewUsers = () => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const now = new Date();
+      const day = now.getDay();
+      const diffToMonday = (day + 6) % 7;
+      const startOfThisWeek = new Date(now);
+      startOfThisWeek.setHours(0, 0, 0, 0);
+      startOfThisWeek.setDate(now.getDate() - diffToMonday);
+
+      const startOfPrevWeek = new Date(startOfThisWeek);
+      startOfPrevWeek.setDate(startOfThisWeek.getDate() - 7);
+
+      const endOfPrevWeek = new Date(startOfPrevWeek);
+      endOfPrevWeek.setDate(startOfPrevWeek.getDate() + 6);
+      endOfPrevWeek.setHours(23, 59, 59, 999);
+
+      const users = await User.find({
+        createdAt: { $gte: startOfPrevWeek, $lte: endOfPrevWeek },
+      }).sort({ createdAt: -1 });
+
+      resolve({
+        status: "OK",
+        message: "Previous week new users retrieved successfully",
+        total: users.length,
+        data: users,
+        range: { start: startOfPrevWeek, end: endOfPrevWeek },
+      });
+    } catch (e) {
+      reject(e);
+    }
+  });
+};
+
 //tạo access token dựa vào refresh token
 
 // forgotPassword
@@ -445,6 +512,8 @@ module.exports = {
   deleteUser,
   getAllUser,
   getDetailsUser,
+  getWeeklyNewUsers,
+  getPreviousWeekNewUsers,
   forgotPassword,
   resetPassword,
   changePassword,

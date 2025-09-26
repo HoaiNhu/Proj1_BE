@@ -26,4 +26,14 @@ router.get(
   "/get-product-by-category/:categoryId",
   productController.getProductsByCategory
 );
+router.get(
+  "/weekly-new-products",
+  authMiddleware,
+  productController.getWeeklyNewProducts
+);
+router.get(
+  "/previous-week-new-products",
+  authMiddleware,
+  productController.getPreviousWeekNewProducts
+);
 module.exports = router;

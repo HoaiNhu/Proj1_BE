@@ -1,4 +1,3 @@
-
 const Product = require("../models/ProductModel");
 
 /**
@@ -140,11 +139,11 @@ const getDetailsProduct = (id) => {
           message: "Product not found",
         });
       }
-     
-      if(!product.productDiscount){
-        product.productDiscount=0;
+
+      if (!product.productDiscount) {
+        product.productDiscount = 0;
       }
-      
+
       // Đảm bảo averageRating và totalRatings luôn có giá trị
       if (!product.averageRating) {
         product.averageRating = 5; // Giá trị mặc định
@@ -281,6 +280,73 @@ const getProductsByCategory = (categoryId) => {
   });
 };
 
+// get products created in current week (Mon 00:00 to Sun 23:59:59.999)
+const getWeeklyNewProducts = () => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const now = new Date();
+      const day = now.getDay(); // 0=Sun,1=Mon,...
+      const diffToMonday = (day + 6) % 7; // days since Monday
+      const startOfWeek = new Date(now);
+      startOfWeek.setHours(0, 0, 0, 0);
+      startOfWeek.setDate(now.getDate() - diffToMonday);
+
+      const endOfWeek = new Date(startOfWeek);
+      endOfWeek.setDate(startOfWeek.getDate() + 6);
+      endOfWeek.setHours(23, 59, 59, 999);
+
+      const products = await Product.find({
+        createdAt: { $gte: startOfWeek, $lte: endOfWeek },
+      }).sort({ createdAt: -1 });
+
+      resolve({
+        status: "OK",
+        message: "Weekly new users retrieved successfully",
+        total: products.length,
+        data: products,
+        range: { start: startOfWeek, end: endOfWeek },
+      });
+    } catch (e) {
+      reject(e);
+    }
+  });
+};
+
+// get users created in previous week (Mon 00:00 to Sun 23:59:59.999 of last week)
+const getPreviousWeekNewProducts = () => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const now = new Date();
+      const day = now.getDay();
+      const diffToMonday = (day + 6) % 7;
+      const startOfThisWeek = new Date(now);
+      startOfThisWeek.setHours(0, 0, 0, 0);
+      startOfThisWeek.setDate(now.getDate() - diffToMonday);
+
+      const startOfPrevWeek = new Date(startOfThisWeek);
+      startOfPrevWeek.setDate(startOfThisWeek.getDate() - 7);
+
+      const endOfPrevWeek = new Date(startOfPrevWeek);
+      endOfPrevWeek.setDate(startOfPrevWeek.getDate() + 6);
+      endOfPrevWeek.setHours(23, 59, 59, 999);
+
+      const products = await Product.find({
+        createdAt: { $gte: startOfPrevWeek, $lte: endOfPrevWeek },
+      }).sort({ createdAt: -1 });
+
+      resolve({
+        status: "OK",
+        message: "Previous week new users retrieved successfully",
+        total: products.length,
+        data: products,
+        range: { start: startOfPrevWeek, end: endOfPrevWeek },
+      });
+    } catch (e) {
+      reject(e);
+    }
+  });
+};
+
 module.exports = {
   createProduct,
   updateProduct,
@@ -289,4 +355,6 @@ module.exports = {
   getAllProduct,
   searchProducts,
   getProductsByCategory, // Export the new function
+  getWeeklyNewProducts,
+  getPreviousWeekNewProducts,
 };

@@ -55,4 +55,18 @@ router.get(
   orderController.getBestSellingProducts
 );
 
+// Lấy đơn hàng mới trong tuần hiện tại
+router.get(
+  "/weekly-new-orders",
+  authMiddleware,
+  orderController.getWeeklyNewOrders
+);
+
+// Lấy đơn hàng mới của tuần trước
+router.get(
+  "/previous-week-new-orders",
+  authMiddleware,
+  orderController.getPreviousWeekNewOrders
+);
+
 module.exports = router;

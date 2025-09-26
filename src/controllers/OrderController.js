@@ -411,6 +411,32 @@ const getBestSellingProducts = async (req, res) => {
   }
 };
 
+// Lấy danh sách và số lượng đơn hàng mới trong tuần hiện tại
+const getWeeklyNewOrders = async (req, res) => {
+  try {
+    const response = await OrderService.getWeeklyNewOrders();
+    return res.status(200).json(response);
+  } catch (error) {
+    return res.status(500).json({
+      status: "ERR",
+      message: error.message || "Internal server error",
+    });
+  }
+};
+
+// Lấy đơn hàng mới của tuần trước
+const getPreviousWeekNewOrders = async (req, res) => {
+  try {
+    const response = await OrderService.getPreviousWeekNewOrders();
+    return res.status(200).json(response);
+  } catch (error) {
+    return res.status(500).json({
+      status: "ERR",
+      message: error.message || "Internal server error",
+    });
+  }
+};
+
 module.exports = {
   createOrder,
   updateOrder,
@@ -423,4 +449,6 @@ module.exports = {
   applyCoinsToOrder,
   getRecentOrders,
   getBestSellingProducts,
+  getWeeklyNewOrders,
+  getPreviousWeekNewOrders,
 };

@@ -485,6 +485,87 @@ const getBestSellingProducts = (limit = 10) => {
   });
 };
 
+// Lấy danh sách đơn hàng tạo trong tuần hiện tại (Mon 00:00 - Sun 23:59:59.999)
+const getWeeklyNewOrders = () => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const now = new Date();
+      const day = now.getDay(); // 0=Sun,1=Mon,...
+      const diffToMonday = (day + 6) % 7; // days since Monday
+      const startOfWeek = new Date(now);
+      startOfWeek.setHours(0, 0, 0, 0);
+      startOfWeek.setDate(now.getDate() - diffToMonday);
+
+      const endOfWeek = new Date(startOfWeek);
+      endOfWeek.setDate(startOfWeek.getDate() + 6);
+      endOfWeek.setHours(23, 59, 59, 999);
+
+      const orders = await Order.find({
+        createdAt: { $gte: startOfWeek, $lte: endOfWeek },
+      })
+        .populate("orderItems.product", "name images price")
+        .populate("userId", "name email")
+        .populate("status", "statusName statusCode")
+        .sort({ createdAt: -1 });
+
+      resolve({
+        status: "OK",
+        message: "Weekly new orders retrieved successfully",
+        total: orders.length,
+        data: orders,
+        range: { start: startOfWeek, end: endOfWeek },
+      });
+    } catch (error) {
+      reject({
+        status: "ERR",
+        message: error.message || "Failed to retrieve weekly new orders",
+      });
+    }
+  });
+};
+
+// Lấy đơn hàng tạo trong tuần trước (Mon 00:00 - Sun 23:59:59.999 của tuần trước)
+const getPreviousWeekNewOrders = () => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const now = new Date();
+      const day = now.getDay();
+      const diffToMonday = (day + 6) % 7;
+      const startOfThisWeek = new Date(now);
+      startOfThisWeek.setHours(0, 0, 0, 0);
+      startOfThisWeek.setDate(now.getDate() - diffToMonday);
+
+      const startOfPrevWeek = new Date(startOfThisWeek);
+      startOfPrevWeek.setDate(startOfThisWeek.getDate() - 7);
+
+      const endOfPrevWeek = new Date(startOfPrevWeek);
+      endOfPrevWeek.setDate(startOfPrevWeek.getDate() + 6);
+      endOfPrevWeek.setHours(23, 59, 59, 999);
+
+      const orders = await Order.find({
+        createdAt: { $gte: startOfPrevWeek, $lte: endOfPrevWeek },
+      })
+        .populate("orderItems.product", "name images price")
+        .populate("userId", "name email")
+        .populate("status", "statusName statusCode")
+        .sort({ createdAt: -1 });
+
+      resolve({
+        status: "OK",
+        message: "Previous week new orders retrieved successfully",
+        total: orders.length,
+        data: orders,
+        range: { start: startOfPrevWeek, end: endOfPrevWeek },
+      });
+    } catch (error) {
+      reject({
+        status: "ERR",
+        message: error.message || "Failed to retrieve previous week orders",
+      });
+    }
+  });
+};
+
 module.exports = {
   createOrder,
   updateOrder,
@@ -496,4 +577,6 @@ module.exports = {
   applyCoinsToOrder,
   getRecentOrders,
   getBestSellingProducts,
+  getWeeklyNewOrders,
+  getPreviousWeekNewOrders,
 };

@@ -1,53 +1,46 @@
 const Product = require("../models/ProductModel");
 const ProductService = require("../services/ProductService");
-const uploadCloudinary= require("../Helper/UploadCloudinary")
+const uploadCloudinary = require("../Helper/UploadCloudinary");
 
 // Tạo sản phẩm mới
 const createProduct = async (req, res) => {
-  
- 
   // Lấy body của request
   const { body } = req;
   console.log("body", body); // In ra đối tượng body
-  
+
   try {
     const {
-     // productCode,
+      // productCode,
       productName,
       productPrice,
       productCategory,
       productSize,
       //productQuantity,
-     // productExpiry,
-     // productRating,
+      // productExpiry,
+      // productRating,
       productDescription,
     } = req.body;
 
     if (
       // !productCode ||
-       !productName ||
-       !productPrice ||
-       !req.file||
-       !productCategory ||
-     
+      !productName ||
+      !productPrice ||
+      !req.file ||
+      !productCategory ||
       // !productQuantity ||
       // !productExpiry ||
-       !productDescription
-     ) 
-    
-     {
-       
-       return res.status(400).json({
-         status: "ERR",
-         message: "All fields are required",
-       });
-     }
-     const productImage= req.file.path;
-    
+      !productDescription
+    ) {
+      return res.status(400).json({
+        status: "ERR",
+        message: "All fields are required",
+      });
+    }
+    const productImage = req.file.path;
+
     //console.log("req1233", req.body)
-    
+
     // Kiểm tra input
-   
 
     const newProduct = {
       //productCode,
@@ -57,10 +50,10 @@ const createProduct = async (req, res) => {
       productCategory,
       productSize,
       productDescription,
-    
-     // productQuantity,
-     // productExpiry,
-    
+
+      // productQuantity,
+      // productExpiry,
+
       //productRating: productRating || 0, // Nếu không có, mặc định 0
     };
 
@@ -101,18 +94,16 @@ const updateProduct = async (req, res) => {
   }
 };
 
-
 // Xóa sản phẩm
 const deleteProduct = async (req, res) => {
   try {
     const productId = req.params.id;
-    console.log("ID", productId)
+    console.log("ID", productId);
     if (!productId) {
       return res.status(200).json({
         status: "ERR",
         message: "The productId is required",
       });
-      
     }
     // const imagePublicId = product.productImage.split("/").pop().split(".")[0]; // Assuming image URL follows Cloudinary format
     // await cloudinary.uploader.destroy(imagePublicId);
@@ -161,7 +152,7 @@ const getAllProduct = async (req, res) => {
 
     const response = await ProductService.getAllProduct(
       Number(limit),
-      Number(page) ,
+      Number(page),
       sort,
       filter
     );
@@ -214,6 +205,30 @@ const getProductsByCategory = async (req, res) => {
   }
 };
 
+// Lấy danh sách và số lượng user mới trong tuần hiện tại
+const getWeeklyNewProducts = async (req, res) => {
+  try {
+    const response = await ProductService.getWeeklyNewProducts();
+    return res.status(200).json(response);
+  } catch (e) {
+    return res.status(404).json({
+      message: e,
+    });
+  }
+};
+
+// Lấy user mới của tuần trước
+const getPreviousWeekNewProducts = async (req, res) => {
+  try {
+    const response = await ProductService.getPreviousWeekNewProducts();
+    return res.status(200).json(response);
+  } catch (e) {
+    return res.status(404).json({
+      message: e,
+    });
+  }
+};
+
 module.exports = {
   createProduct,
   updateProduct,
@@ -221,7 +236,7 @@ module.exports = {
   getDetailsProduct,
   getAllProduct,
   searchProducts,
-  getProductsByCategory, // Thêm phương thức mới vào module.exports
+  getProductsByCategory,
+  getWeeklyNewProducts,
+  getPreviousWeekNewProducts,
 };
-
-
