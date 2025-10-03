@@ -3,9 +3,14 @@ const Joi = require("joi");
 
 // Helper function: Handle errors
 const handleError = (res, error) => {
+  const message =
+    error?.message ||
+    (typeof error === "object" ? JSON.stringify(error) : String(error)) ||
+    "Internal Server Error";
+
   return res.status(500).json({
     status: "ERR",
-    message: error.message || "Internal Server Error",
+    message,
     stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
   });
 };
