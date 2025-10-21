@@ -4,8 +4,14 @@ services:
     env: node
     region: singapore
     plan: free
-    buildCommand: npm install --legacy-peer-deps
-    startCommand: node server.js
+    buildCommand: |
+      pwd
+      ls -la
+      npm install --legacy-peer-deps
+    startCommand: |
+      pwd
+      ls -la
+      node server.js
     healthCheckPath: /api/product
     envVars:
       - key: NODE_ENV
