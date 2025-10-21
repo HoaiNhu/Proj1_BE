@@ -4,9 +4,8 @@ services:
     env: node
     region: singapore
     plan: free
-    rootDir: .
     buildCommand: npm ci --legacy-peer-deps || npm install --legacy-peer-deps
-    startCommand: npm start
+    startCommand: node src/index.js
     healthCheckPath: /api/product
     envVars:
       - key: NODE_ENV
