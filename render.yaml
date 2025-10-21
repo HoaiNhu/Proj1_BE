@@ -5,7 +5,7 @@ services:
     region: singapore
     plan: free
     rootDir: .
-    buildCommand: rm -rf node_modules && npm install --legacy-peer-deps
+    buildCommand: npm ci --legacy-peer-deps || npm install --legacy-peer-deps
     startCommand: npm start
     healthCheckPath: /api/product
     envVars:
