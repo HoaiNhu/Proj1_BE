@@ -27,11 +27,13 @@ Error: Cannot find module './gOPD'
 ### **Bước 3: Sửa Root Directory**
 
 Tìm dòng:
+
 ```
 Root Directory: src   ← XÓA CÁI NÀY
 ```
 
 **Sửa thành:**
+
 ```
 Root Directory: .
 ```
@@ -54,6 +56,7 @@ Hoặc **để trống** (empty)
 ## 🎯 KẾT QUẢ
 
 Sau khi fix, logs sẽ hiện:
+
 ```
 ✅ Connect db successful
 ✅ Service is running in port: 3001
@@ -73,6 +76,7 @@ Sau khi fix, logs sẽ hiện:
 ## 🔍 KIỂM TRA
 
 Test service sau khi deploy:
+
 ```bash
 curl https://avocado-backend.onrender.com/
 curl https://avocado-backend.onrender.com/health
@@ -96,11 +100,13 @@ Tất cả phải trả về `200 OK`
 ## 🆘 NẾU VẪN LỖI
 
 Try build command này:
+
 ```bash
 npm ci --legacy-peer-deps
 ```
 
 Hoặc:
+
 ```bash
 rm -rf node_modules package-lock.json && npm install
 ```

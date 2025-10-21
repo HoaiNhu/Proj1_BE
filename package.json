@@ -2,6 +2,9 @@
   "name": "proj1_be",
   "version": "1.0.0",
   "main": "index.js",
+  "engines": {
+    "node": "20.x"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
@@ -14,6 +17,9 @@
   "author": "",
   "license": "ISC",
   "description": "",
+  "overrides": {
+    "gopd": "1.0.1"
+  },
   "dependencies": {
     "axios": "^1.8.1",
     "bcrypt": "^5.1.1",
