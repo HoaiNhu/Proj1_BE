@@ -23,25 +23,34 @@ router.put(
 );
 
 // Xóa khuyến mãi
-router.delete("/delete-discount/:id", authMiddleware, discountController.deleteDiscount);
+router.delete(
+  "/delete-discount/:id",
+  authMiddleware,
+  discountController.deleteDiscount
+);
 
 // Lấy chi tiết 1 khuyến mãi
-router.get("/get-details/:id", discountController.getDetailsDiscount);
+router.get("/get-detail/:id", discountController.getDetailsDiscount);
 
 // Lấy toàn bộ khuyến mãi (có phân trang, lọc, sắp xếp)
 router.get("/get-all-discount", discountController.getAllDiscount);
-
 
 // === CÁC ROUTES BỔ SUNG ===
 
 // Kiểm tra mã giảm giá hợp lệ
 router.post("/validate-discount", discountController.validateDiscount);
 
-
 // Bật / tắt trạng thái khuyến mãi
-router.patch("/toggle-status/:id", authMiddleware, discountController.toggleDiscountStatus);
+router.patch(
+  "/toggle-status/:id",
+  authMiddleware,
+  discountController.toggleDiscountStatus
+);
 
 // Lấy danh sách sản phẩm có khuyến mãi tốt nhất
-router.get("/get-best-discount-products",discountController.getProductsWithBestDiscount);
+router.get(
+  "/get-best-discount-products",
+  discountController.getProductsWithBestDiscount
+);
 
 module.exports = router;

@@ -1,0 +1,58 @@
+services:
+  - type: web
+    name: avocado-backend
+    env: node
+    region: singapore
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/product
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+      - key: MONGO_DB
+        sync: false
+      - key: ACCESS_TOKEN
+        generateValue: true
+      - key: REFRESH_TOKEN
+        generateValue: true
+      - key: CLOUD_NAME
+        sync: false
+      - key: API_KEY
+        sync: false
+      - key: API_SECRET
+        sync: false
+      - key: EMAIL_USER
+        sync: false
+      - key: EMAIL_PASS
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+      - key: CLIENT_ID
+        sync: false
+      - key: CLIENT_SECRET
+        sync: false
+      - key: PAYPAL_API_URL
+        value: https://api-m.sandbox.paypal.com
+      - key: VIETQR_API_KEY
+        sync: false
+      - key: VIETQR_CLIENT_ID
+        sync: false
+      - key: BANK_BIN
+        value: 970415
+      - key: BANK_NAME
+        value: VietinBank
+      - key: BANK_ACCOUNT_NUMBER
+        sync: false
+      - key: BANK_ACCOUNT_NAME
+        sync: false
+      - key: FASTAPI_URL
+        value: https://rcm-system.onrender.com
+      - key: CAKE_DIFFUSION_API_URL
+        value: https://generate-img-1u0a.onrender.com
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: OPEN_API_KEY
+        sync: false

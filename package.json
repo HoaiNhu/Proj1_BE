@@ -4,8 +4,12 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon src/index.js",
-    "build": "cd ../client && npm install && npm run build"
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "build": "cd ../client && npm install && npm run build",
+    "check-env": "node check-env.js",
+    "test-mongo": "node test-mongo-connection.js",
+    "generate-secrets": "node generate-secrets.js"
   },
   "author": "",
   "license": "ISC",

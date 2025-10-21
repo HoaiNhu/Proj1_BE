@@ -17,17 +17,45 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3001;
 
-// app.get("/", (req, res) => {
-//   res.send("Hello world one");
-// });
+// Health check endpoint for monitoring
+app.get("/", (req, res) => {
+  res.status(200).json({
+    status: "OK",
+    message: "Avocado Cake Backend API is running",
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || "development",
+  });
+});
+
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    status: "OK",
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString(),
+  });
+});
 
 app.use(
   cors({
-    origin:
-      process.env.NODE_ENV === "production"
-        ? "https://avocado-app.onrender.com"
-        : // "http://localhost:3000"
-          "http://localhost:3100 ", // Cho phép cả local và production
+    origin: function (origin, callback) {
+      // Cho phép requests không có origin (như mobile apps hoặc curl)
+      if (!origin) return callback(null, true);
+
+      const allowedOrigins = [
+        "https://avocado-app.onrender.com", // Production frontend
+        "http://localhost:3000", // Local development
+        "http://localhost:3100", // Local development alternative
+      ];
+
+      if (
+        allowedOrigins.indexOf(origin) !== -1 ||
+        process.env.NODE_ENV !== "production"
+      ) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true, // Cho phép gửi cookie
   })
 );
@@ -43,9 +71,9 @@ app.use("/api/auth", authRouter);
 routes(app);
 
 // Định tuyến mọi request không phải API về index.html của React
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "../../client/build", "index.html"));
-});
+// app.get("*", (req, res) => {
+//   res.sendFile(path.join(__dirname, "../../client/build", "index.html"));
+// });
 
 mongoose
   .connect(`${process.env.MONGO_DB}`)
