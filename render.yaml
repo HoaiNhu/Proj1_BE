@@ -7,10 +7,16 @@ services:
     buildCommand: |
       pwd
       ls -la
+      rm -rf node_modules package-lock.json
       npm install --legacy-peer-deps
     startCommand: |
       pwd
       ls -la
+      echo "=== Checking if server.js exists ==="
+      test -f server.js && echo "server.js found" || echo "server.js NOT FOUND"
+      echo "=== Checking if src/index.js exists ==="
+      test -f src/index.js && echo "src/index.js found" || echo "src/index.js NOT FOUND"
+      echo "=== Starting server ==="
       node server.js
     healthCheckPath: /api/product
     envVars:
