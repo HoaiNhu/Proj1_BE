@@ -7,6 +7,7 @@ const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const authRouter = require("../src/routes/AuthRouter");
 const path = require("path");
+const fs = require("fs");
 const cron = require("node-cron"); // Thêm node-cron
 const axios = require("axios"); // Thêm axios để self-ping
 const Product = require("./models/ProductModel"); // Thêm model Product
@@ -17,6 +18,11 @@ dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3001;
+
+console.log("Runtime:", {
+  node: process.version,
+  env: process.env.NODE_ENV || "development",
+});
 
 // Health check endpoint for monitoring
 app.get("/", (req, res) => {
@@ -46,20 +52,22 @@ app.get("/ping", (req, res) => {
   });
 });
 
+// Cho phép cấu hình CORS qua biến env CORS_ORIGINS (phân cách bằng dấu phẩy)
+// VD: CORS_ORIGINS=https://fe.example.com,https://www.example.com
+const ALLOWED_ORIGINS = (
+  process.env.CORS_ORIGINS ||
+  "https://avocado-app.onrender.com,http://localhost:3000,http://localhost:3100"
+)
+  .split(",")
+  .map((s) => s.trim());
+
 app.use(
   cors({
     origin: function (origin, callback) {
       // Cho phép requests không có origin (như mobile apps hoặc curl)
       if (!origin) return callback(null, true);
-
-      const allowedOrigins = [
-        "https://avocado-app.onrender.com", // Production frontend
-        "http://localhost:3000", // Local development
-        "http://localhost:3100", // Local development alternative
-      ];
-
       if (
-        allowedOrigins.indexOf(origin) !== -1 ||
+        ALLOWED_ORIGINS.includes(origin) ||
         process.env.NODE_ENV !== "production"
       ) {
         callback(null, true);
@@ -76,7 +84,14 @@ app.use(express.json({ limit: "10000mb" }));
 app.use(express.urlencoded({ limit: "10000mb", extended: true }));
 app.use(cookieParser());
 
-app.use(express.static(path.join(__dirname, "../../client/build")));
+// Chỉ serve static FE nếu thư mục build tồn tại (triển khai tách FE/BE sẽ bỏ qua)
+const clientBuildPath = path.join(__dirname, "../client/build");
+if (fs.existsSync(clientBuildPath)) {
+  app.use(express.static(clientBuildPath));
+  console.log("Serving static FE from:", clientBuildPath);
+} else {
+  console.log("No client build found. Skipping static serving.");
+}
 
 app.use("/api/auth", authRouter);
 routes(app);
