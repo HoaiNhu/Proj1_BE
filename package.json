@@ -18,7 +18,11 @@
   "license": "ISC",
   "description": "",
   "overrides": {
-    "gopd": "1.0.1"
+    "get-intrinsic": "1.2.4",
+    "gopd": "1.0.1",
+    "side-channel": "1.0.6",
+    "side-channel-map": "1.0.0",
+    "qs": "6.11.0"
   },
   "dependencies": {
     "axios": "^1.8.1",
