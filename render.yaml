@@ -4,7 +4,8 @@ services:
     env: node
     region: singapore
     plan: free
-    buildCommand: npm install
+    rootDir: .
+    buildCommand: rm -rf node_modules && npm install --legacy-peer-deps
     startCommand: npm start
     healthCheckPath: /api/product
     envVars:
