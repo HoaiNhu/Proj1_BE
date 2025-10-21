@@ -3,7 +3,7 @@ const { OAuth2Client } = require("google-auth-library"); // Để xác thực Go
 const axios = require("axios"); // Để xác thực Facebook
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 
 // Quên mật khẩu
 const forgotPassword = async (email) => {
@@ -78,9 +78,9 @@ const resetPassword = async (email, newPassword) => {
       throw new Error("Người dùng không tồn tại!");
     }
 
-    // Hash mật khẩu mới trước khi lưu
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(newPassword, salt);
+  // Hash mật khẩu mới trước khi lưu (dùng bcryptjs - JS thuần)
+  const salt = bcrypt.genSaltSync(10);
+  const hashedPassword = bcrypt.hashSync(newPassword, salt);
 
     // Cập nhật mật khẩu mới
     user.userPassword = hashedPassword;
