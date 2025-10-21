@@ -8,6 +8,7 @@ const cookieParser = require("cookie-parser");
 const authRouter = require("../src/routes/AuthRouter");
 const path = require("path");
 const cron = require("node-cron"); // Thêm node-cron
+const axios = require("axios"); // Thêm axios để self-ping
 const Product = require("./models/ProductModel"); // Thêm model Product
 const DailyPuzzle = require("./models/DailyPuzzle"); // Thêm model DailyPuzzle
 const { generatePuzzle } = require("./utils/PuzzleGenerator"); // Thêm hàm generatePuzzle
@@ -32,6 +33,16 @@ app.get("/health", (req, res) => {
     status: "OK",
     uptime: process.uptime(),
     timestamp: new Date().toISOString(),
+  });
+});
+
+// Ping endpoint để keep service alive (prevent Render free tier sleep)
+app.get("/ping", (req, res) => {
+  res.status(200).json({
+    status: "OK",
+    message: "Pong! Service is alive",
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
   });
 });
 
@@ -79,6 +90,7 @@ mongoose
   .connect(`${process.env.MONGO_DB}`)
   .then(() => {
     console.log("Connect db successful");
+
     // Lên lịch tạo ô chữ mới mỗi ngày lúc 00:00
     cron.schedule("0 0 * * *", async () => {
       try {
@@ -127,6 +139,32 @@ mongoose
         console.error("Error in daily puzzle cron job:", err);
       }
     });
+
+    // Self-ping mỗi 5 phút để keep service alive (Render free tier)
+    // Chỉ chạy trong production
+    if (process.env.NODE_ENV === "production") {
+      const SERVICE_URL =
+        process.env.RENDER_EXTERNAL_URL ||
+        "https://avocado-backend.onrender.com";
+
+      cron.schedule("*/5 * * * *", async () => {
+        try {
+          const response = await axios.get(`${SERVICE_URL}/ping`);
+          console.log(
+            `✅ Self-ping successful at ${new Date().toISOString()}: ${
+              response.data.message
+            }`
+          );
+        } catch (err) {
+          console.error(
+            `❌ Self-ping failed at ${new Date().toISOString()}:`,
+            err.message
+          );
+        }
+      });
+
+      console.log("🔄 Self-ping cron job started (every 5 minutes)");
+    }
   })
   .catch((err) => {
     console.log(err);
