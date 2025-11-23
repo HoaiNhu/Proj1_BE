@@ -693,12 +693,12 @@ const sendVoucherEmail = async (voucherId, emails) => {
 
     // Configure email transporter (sử dụng Brevo SMTP có sẵn)
     const transporter = nodemailer.createTransport({
-      host: process.env.BREVO_SMTP_HOST,
-      port: process.env.BREVO_SMTP_PORT,
+      host: "smtp-relay.brevo.com",
+      port: 587,
       secure: false,
       auth: {
-        user: process.env.BREVO_SMTP_USER,
-        pass: process.env.BREVO_SMTP_PASS,
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
       },
     });
 
@@ -706,7 +706,7 @@ const sendVoucherEmail = async (voucherId, emails) => {
       const user = await User.findOne({ email });
 
       const mailOptions = {
-        from: process.env.BREVO_SENDER_EMAIL,
+        from: `"Avocado Shop" <${process.env.EMAIL_FROM}>`,
         to: email,
         subject: `🎉 Bạn nhận được voucher ${voucher.voucherName}!`,
         html: `
