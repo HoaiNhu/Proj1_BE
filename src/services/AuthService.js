@@ -99,26 +99,59 @@ const resetPassword = async (email, newPassword) => {
 
 // Đăng nhập bằng Google
 const loginWithGoogle = async (token) => {
-  const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-  const ticket = await client.verifyIdToken({
-    idToken: token,
-    audience: process.env.GOOGLE_CLIENT_ID,
-  });
-  const payload = ticket.getPayload();
-  const { email, name, picture } = payload;
-
-  // Kiểm tra và tạo người dùng nếu chưa tồn tại
-  let user = await User.findOne({ userEmail: email });
-  if (!user) {
-    user = new User({
-      userEmail: email,
-      userName: name,
-      userImage: picture,
+  try {
+    const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
     });
-    await user.save();
-  }
+    const payload = ticket.getPayload();
+    const { email, name, picture, given_name } = payload;
 
-  return { success: true, user };
+    // Kiểm tra và tạo người dùng nếu chưa tồn tại
+    let user = await User.findOne({ userEmail: email });
+
+    if (!user) {
+      // Tạo password mặc định từ email (hash)
+      const defaultPassword = `Google_${email}_${Date.now()}`;
+      const salt = bcrypt.genSaltSync(10);
+      const hashedPassword = bcrypt.hashSync(defaultPassword, salt);
+
+      user = new User({
+        familyName: given_name || name.split(" ")[0] || "User",
+        userName: name || "Google User",
+        userPhone: "0000000000", // Placeholder
+        userEmail: email,
+        userPassword: hashedPassword,
+        userConfirmPassword: hashedPassword,
+        userImage: picture,
+        isAdmin: false,
+      });
+      await user.save();
+    }
+
+    // Tạo JWT tokens (import từ JwtService)
+    const JwtService = require("./JwtService");
+    const access_token = await JwtService.generalAccessToken({
+      id: user._id,
+      isAdmin: user.isAdmin,
+    });
+
+    const refresh_token = await JwtService.generalRefreshToken({
+      id: user._id,
+      isAdmin: user.isAdmin,
+    });
+
+    return {
+      status: "OK",
+      message: "Login successful",
+      access_token,
+      refresh_token,
+      data: user,
+    };
+  } catch (error) {
+    throw new Error(error.message);
+  }
 };
 
 // Đăng nhập bằng Facebook
