@@ -172,7 +172,9 @@ const getDetailsProduct = (id) => {
 const getAllProduct = (limit, page, sort, filter) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const query = {};
+      const query = {
+        isHidden: { $ne: true }, // Chỉ lấy sản phẩm không bị ẩn
+      };
 
       // Add filtering condition
       if (filter) {
@@ -221,6 +223,7 @@ const searchProducts = async (query) => {
 
     const products = await Product.find({
       productName: { $regex: query, $options: "i" }, // Case-insensitive partial match
+      isHidden: { $ne: true }, // Chỉ lấy sản phẩm không bị ẩn
     });
 
     if (products.length === 0) {
@@ -257,7 +260,10 @@ const getProductsByCategory = (categoryId) => {
         });
       }
 
-      const products = await Product.find({ productCategory: categoryId });
+      const products = await Product.find({
+        productCategory: categoryId,
+        isHidden: { $ne: true }, // Chỉ lấy sản phẩm không bị ẩn
+      });
 
       if (products.length === 0) {
         return resolve({
@@ -347,6 +353,44 @@ const getPreviousWeekNewProducts = () => {
   });
 };
 
+/**
+ * Toggle product visibility (hide/show)
+ */
+const toggleProductVisibility = (id) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const product = await Product.findById(id);
+
+      if (!product) {
+        return resolve({
+          status: "ERR",
+          message: "Product not found",
+        });
+      }
+
+      // Toggle isHidden status
+      const updatedProduct = await Product.findByIdAndUpdate(
+        id,
+        { isHidden: !product.isHidden },
+        { new: true }
+      );
+
+      resolve({
+        status: "OK",
+        message: `Product ${
+          updatedProduct.isHidden ? "hidden" : "visible"
+        } successfully`,
+        data: updatedProduct,
+      });
+    } catch (e) {
+      reject({
+        status: "ERR",
+        message: e.message || "Failed to toggle product visibility",
+      });
+    }
+  });
+};
+
 module.exports = {
   createProduct,
   updateProduct,
@@ -357,4 +401,5 @@ module.exports = {
   getProductsByCategory, // Export the new function
   getWeeklyNewProducts,
   getPreviousWeekNewProducts,
+  toggleProductVisibility,
 };

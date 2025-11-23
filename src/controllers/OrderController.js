@@ -411,6 +411,58 @@ const getBestSellingProducts = async (req, res) => {
   }
 };
 
+// Xác nhận thanh toán với voucher
+const confirmPaymentWithVoucher = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { orderId, voucherData } = req.body;
+
+    console.log("=== confirmPaymentWithVoucher Controller ===");
+    console.log("userId:", userId);
+    console.log("orderId:", orderId);
+    console.log("voucherData:", JSON.stringify(voucherData, null, 2));
+
+    if (!orderId) {
+      console.error("Missing orderId in request");
+      return res.status(400).json({
+        status: "ERR",
+        message: "Order ID is required",
+      });
+    }
+
+    if (
+      !voucherData ||
+      !voucherData.selectedVouchers ||
+      voucherData.selectedVouchers.length === 0
+    ) {
+      console.error("Missing or empty voucherData");
+      return res.status(400).json({
+        status: "ERR",
+        message: "Voucher data is required",
+      });
+    }
+
+    const response = await OrderService.confirmPaymentWithVoucher(
+      orderId,
+      userId,
+      voucherData
+    );
+
+    console.log("confirmPaymentWithVoucher response:", response.status);
+    return res.status(200).json(response);
+  } catch (error) {
+    console.error("=== ERROR in confirmPaymentWithVoucher Controller ===");
+    console.error("Error message:", error.message);
+    console.error("Error stack:", error.stack);
+    console.error("Full error:", error);
+
+    return res.status(500).json({
+      status: "ERR",
+      message: error.message || "Internal server error",
+    });
+  }
+};
+
 // Lấy danh sách và số lượng đơn hàng mới trong tuần hiện tại
 const getWeeklyNewOrders = async (req, res) => {
   try {
@@ -447,6 +499,7 @@ module.exports = {
   updateOrderStatus,
   deductCoinsForOrder,
   applyCoinsToOrder,
+  confirmPaymentWithVoucher,
   getRecentOrders,
   getBestSellingProducts,
   getWeeklyNewOrders,

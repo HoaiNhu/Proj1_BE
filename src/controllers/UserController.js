@@ -113,10 +113,21 @@ const loginUser = async (req, res) => {
     const { refresh_token, ...newResponse } = response;
 
     // console.log("response", response);
+    // Cookie settings cho production và development
+    const isProduction = process.env.NODE_ENV === "production";
+
+    console.log("🍪 Setting refresh_token cookie:", {
+      isProduction,
+      cookieLength: refresh_token?.length,
+      origin: req.headers.origin,
+    });
+
     res.cookie("refresh_token", refresh_token, {
       httpOnly: true,
-      secure: false,
-      sameSite: "Strict",
+      secure: isProduction, // true trong production, false trong dev
+      sameSite: "Lax", // Lax works cho localhost same-site
+      maxAge: 365 * 24 * 60 * 60 * 1000, // 365 ngày
+      path: "/",
     });
 
     if (!response) {
@@ -135,7 +146,13 @@ const loginUser = async (req, res) => {
 //đăng xuất
 const logoutUser = async (req, res) => {
   try {
-    res.clearCookie("refresh_token");
+    const isProduction = process.env.NODE_ENV === "production";
+    res.clearCookie("refresh_token", {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: "Lax",
+      path: "/",
+    });
     return res.status(200).json({
       status: "OK",
       message: "Log out successfully",
@@ -227,8 +244,11 @@ const getDetailsUser = async (req, res) => {
 
 //cấp token mới
 const refreshToken = async (req, res) => {
-  console.log("req.cookies", req.cookies);
-  console.log("req.cookies.refresh_token", req.cookies.refresh_token);
+  console.log("🔄 Refresh token request:");
+  console.log("  - req.cookies:", req.cookies);
+  console.log("  - req.cookies.refresh_token:", req.cookies.refresh_token);
+  console.log("  - req.headers.cookie:", req.headers.cookie);
+  console.log("  - req.headers.origin:", req.headers.origin);
 
   try {
     const token = req.cookies.refresh_token;

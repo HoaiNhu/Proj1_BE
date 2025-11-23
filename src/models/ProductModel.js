@@ -17,6 +17,7 @@ const productSchema = new mongoose.Schema(
     totalRatings: { type: Number, default: 1 }, // Mặc định 1 đánh giá (đánh giá mặc định)
     productDescription: { type: String, required: true },
     productDiscount: { type: Number, default: 0 },
+    isHidden: { type: Boolean, default: false }, // Ẩn/hiện sản phẩm với client
   },
   {
     timestamps: true,

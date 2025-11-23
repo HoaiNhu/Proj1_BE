@@ -36,4 +36,9 @@ router.get(
   authMiddleware,
   productController.getPreviousWeekNewProducts
 );
+router.patch(
+  "/toggle-visibility/:id",
+  authMiddleware,
+  productController.toggleProductVisibility
+);
 module.exports = router;

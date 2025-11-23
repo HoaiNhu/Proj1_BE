@@ -45,6 +45,13 @@ router.post(
   orderController.applyCoinsToOrder
 );
 
+// Xác nhận thanh toán với voucher
+router.post(
+  "/confirm-payment-voucher",
+  authUserTokenMiddleware,
+  orderController.confirmPaymentWithVoucher
+);
+
 // Lấy top 5 đơn hàng mới nhất
 router.get("/recent-orders", authMiddleware, orderController.getRecentOrders);
 

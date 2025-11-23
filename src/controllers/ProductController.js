@@ -229,6 +229,27 @@ const getPreviousWeekNewProducts = async (req, res) => {
   }
 };
 
+// Toggle product visibility (hide/show)
+const toggleProductVisibility = async (req, res) => {
+  try {
+    const productId = req.params.id;
+
+    if (!productId) {
+      return res.status(400).json({
+        status: "ERR",
+        message: "The productId is required",
+      });
+    }
+
+    const response = await ProductService.toggleProductVisibility(productId);
+    return res.status(200).json(response);
+  } catch (e) {
+    return res.status(500).json({
+      message: e.message || "Something went wrong",
+    });
+  }
+};
+
 module.exports = {
   createProduct,
   updateProduct,
@@ -239,4 +260,5 @@ module.exports = {
   getProductsByCategory,
   getWeeklyNewProducts,
   getPreviousWeekNewProducts,
+  toggleProductVisibility,
 };

@@ -318,6 +318,181 @@ const updateOrderStatus = (id, statusId) => {
   });
 };
 
+// Xác nhận thanh toán và áp dụng voucher
+const confirmPaymentWithVoucher = async (orderId, userId, voucherData) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      // Validate and convert orderId to ObjectId
+      if (!mongoose.Types.ObjectId.isValid(orderId)) {
+        return reject({
+          status: "ERR",
+          message: "Invalid order ID format",
+        });
+      }
+
+      const orderObjectId = new mongoose.Types.ObjectId(orderId);
+      console.log(
+        "confirmPaymentWithVoucher called with orderId:",
+        orderObjectId
+      );
+
+      const order = await checkOrderExistence(orderObjectId);
+
+      // Kiểm tra quyền
+      if (order.userId && order.userId.toString() !== userId.toString()) {
+        return reject({
+          status: "ERR",
+          message: "Bạn không có quyền thay đổi đơn hàng này",
+        });
+      }
+
+      const { selectedVouchers, voucherDiscount, finalTotalPrice } =
+        voucherData;
+
+      console.log(
+        "selectedVouchers received:",
+        JSON.stringify(selectedVouchers, null, 2)
+      );
+      console.log("Number of vouchers to process:", selectedVouchers.length);
+
+      // Cập nhật order với voucher info
+      const updatedOrder = await Order.findByIdAndUpdate(
+        orderObjectId,
+        {
+          vouchersUsed: selectedVouchers.map((v) => ({
+            voucherId: v._id,
+            voucherCode: v.voucherCode,
+            voucherName: v.voucherName,
+            voucherType: v.voucherType,
+            discountAmount: v.discountAmount || 0,
+          })),
+          voucherDiscount: voucherDiscount || 0,
+          totalPrice: finalTotalPrice,
+        },
+        { new: true }
+      ).populate("vouchersUsed.voucherId");
+
+      // Mark vouchers as used
+      const UserVoucher = require("../models/UserVoucherModel");
+      const Voucher = require("../models/VoucherModel");
+      const VoucherUsageHistory = require("../models/VoucherUsageHistoryModel");
+
+      for (const voucher of selectedVouchers) {
+        console.log("\n=== Processing voucher ===");
+        console.log("voucher object:", JSON.stringify(voucher, null, 2));
+        console.log("voucher._id:", voucher._id, "type:", typeof voucher._id);
+
+        try {
+          // Convert IDs to ObjectId
+          const userIdObj = new mongoose.Types.ObjectId(userId);
+          const voucherIdObj = new mongoose.Types.ObjectId(voucher._id);
+
+          console.log("Searching UserVoucher with:", {
+            userId: userIdObj,
+            voucherId: voucherIdObj,
+            status: "ACTIVE",
+          });
+
+          // Tìm UserVoucher
+          const userVoucher = await UserVoucher.findOne({
+            userId: userIdObj,
+            voucherId: voucherIdObj,
+            status: "ACTIVE",
+          });
+
+          if (!userVoucher) {
+            console.error("❌ UserVoucher not found for:", {
+              userId: userIdObj,
+              voucherId: voucherIdObj,
+            });
+
+            // Kiểm tra xem có UserVoucher nào không?
+            const anyUserVoucher = await UserVoucher.findOne({
+              userId: userIdObj,
+              voucherId: voucherIdObj,
+            });
+            console.error(
+              "Any UserVoucher (any status):",
+              anyUserVoucher
+                ? {
+                    id: anyUserVoucher._id,
+                    status: anyUserVoucher.status,
+                    orderId: anyUserVoucher.orderId,
+                  }
+                : "Not found"
+            );
+
+            continue;
+          }
+
+          console.log("✓ Found UserVoucher:", {
+            id: userVoucher._id,
+            status: userVoucher.status,
+            currentOrderId: userVoucher.orderId,
+          });
+
+          // Mark as USED using method - use orderObjectId
+          await userVoucher.markAsUsed(orderObjectId);
+          console.log("UserVoucher marked as USED:", {
+            userVoucherId: userVoucher._id,
+            orderId: orderObjectId,
+            status: userVoucher.status,
+          });
+
+          // Tìm Voucher và tăng usedQuantity
+          const voucherDoc = await Voucher.findById(voucher._id);
+          if (voucherDoc) {
+            await voucherDoc.incrementUsed();
+            console.log("Voucher usedQuantity incremented:", {
+              voucherId: voucherDoc._id,
+              usedQuantity: voucherDoc.usedQuantity,
+            });
+          } else {
+            console.error("Voucher not found:", voucher._id);
+          }
+
+          // Tạo VoucherUsageHistory - use orderObjectId
+          const usageHistory = await VoucherUsageHistory.create({
+            userId: new mongoose.Types.ObjectId(userId),
+            voucherId: new mongoose.Types.ObjectId(voucher._id),
+            userVoucherId: userVoucher._id,
+            orderId: orderObjectId,
+            originalOrderValue: order.totalItemPrice + order.shippingPrice,
+            discountAmount: voucher.discountAmount || 0,
+            finalOrderValue: finalTotalPrice,
+            voucherCode: voucher.voucherCode,
+            voucherType: voucher.voucherType,
+            usedAt: new Date(),
+          });
+          console.log("VoucherUsageHistory created:", {
+            historyId: usageHistory._id,
+            orderId: usageHistory.orderId,
+            userId: usageHistory.userId,
+          });
+        } catch (voucherError) {
+          console.error("Error processing voucher:", {
+            voucherId: voucher._id,
+            error: voucherError.message,
+            stack: voucherError.stack,
+          });
+          // Continue processing other vouchers
+        }
+      }
+
+      resolve({
+        status: "OK",
+        message: "Xác nhận thanh toán thành công",
+        data: updatedOrder,
+      });
+    } catch (error) {
+      reject({
+        status: "ERR",
+        message: error.message || "Có lỗi xảy ra khi xác nhận thanh toán",
+      });
+    }
+  });
+};
+
 // Đổi xu thành tiền cho đơn hàng
 const applyCoinsToOrder = async (orderId, userId, coinsToUse) => {
   return new Promise(async (resolve, reject) => {
@@ -575,6 +750,7 @@ module.exports = {
   getOrdersByUser,
   updateOrderStatus,
   applyCoinsToOrder,
+  confirmPaymentWithVoucher,
   getRecentOrders,
   getBestSellingProducts,
   getWeeklyNewOrders,

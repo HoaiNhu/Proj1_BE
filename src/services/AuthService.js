@@ -78,9 +78,9 @@ const resetPassword = async (email, newPassword) => {
       throw new Error("Người dùng không tồn tại!");
     }
 
-  // Hash mật khẩu mới trước khi lưu (dùng bcryptjs - JS thuần)
-  const salt = bcrypt.genSaltSync(10);
-  const hashedPassword = bcrypt.hashSync(newPassword, salt);
+    // Hash mật khẩu mới trước khi lưu (dùng bcryptjs - JS thuần)
+    const salt = bcrypt.genSaltSync(10);
+    const hashedPassword = bcrypt.hashSync(newPassword, salt);
 
     // Cập nhật mật khẩu mới
     user.userPassword = hashedPassword;

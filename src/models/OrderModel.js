@@ -15,7 +15,7 @@ const orderSchema = new mongoose.Schema(
         },
         quantity: { type: Number, required: true }, // Số lượng
         total: { type: Number, required: false }, // Tổng tiền cho sản phẩm
-        discountPercent: { type: Number, default:0 }, //Gia tri discount
+        discountPercent: { type: Number, default: 0 }, //Gia tri discount
       },
     ],
 
@@ -68,6 +68,18 @@ const orderSchema = new mongoose.Schema(
     totalPrice: { type: Number, required: true }, // Tổng thanh toán (bao gồm vận chuyển)
     coinsUsed: { type: Number, default: 0 }, // Số xu đã sử dụng cho đơn hàng này
 
+    // Voucher information
+    vouchersUsed: [
+      {
+        voucherId: { type: mongoose.Schema.Types.ObjectId, ref: "Voucher" },
+        voucherCode: { type: String },
+        voucherName: { type: String },
+        voucherType: { type: String },
+        discountAmount: { type: Number },
+      },
+    ],
+    voucherDiscount: { type: Number, default: 0 }, // Tổng giảm giá từ voucher
+
     // Thời gian thanh toán và giao hàng
     isPaid: { type: Boolean, default: false },
     paidAt: { type: Date },
@@ -90,9 +102,12 @@ orderSchema.pre("save", function (next) {
     (total, item) => total + item.total,
     0
   );
-  // Tính tổng thanh toán (trừ đi số xu đã sử dụng)
+  // Tính tổng thanh toán (trừ đi số xu đã sử dụng và voucher discount)
   order.totalPrice =
-    order.totalItemPrice + order.shippingPrice - order.coinsUsed;
+    order.totalItemPrice +
+    order.shippingPrice -
+    order.coinsUsed -
+    order.voucherDiscount;
   next();
 });
 

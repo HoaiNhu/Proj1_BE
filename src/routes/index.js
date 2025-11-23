@@ -16,6 +16,7 @@ const QuizRouter = require("./QuizRouter");
 const PuzzleRouter = require("./PuzzleRouter");
 const UserAssetsRouter = require("./UserAssetsRouter");
 const SearchHistoryRouter = require("./SearchHistoryRouter");
+const VoucherRouter = require("./VoucherRouter");
 
 const routes = (app) => {
   app.use("/api/user", UserRouter);
@@ -27,6 +28,7 @@ const routes = (app) => {
   app.use("/api/order", OrderRouter);
   app.use("/api/payment", PaymentRouter);
   app.use("/api/discount", DiscountRouter);
+  app.use("/api/voucher", VoucherRouter);
   app.use("/api/recommendation", Recommendation);
   app.use("/api/rating", Rating);
   app.use("/api/ai", AIRouter);
