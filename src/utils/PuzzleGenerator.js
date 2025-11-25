@@ -41,6 +41,9 @@ const generatePuzzle = (productName) => {
     }
   }
 
+  // Sắp xếp hiddenIndices theo thứ tự tăng dần để đảm bảo thứ tự nhập đúng
+  hiddenIndices.sort((a, b) => a - b);
+
   // Tạo ô chữ
   const puzzle = chars
     .map((char, i) => {
