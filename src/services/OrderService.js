@@ -1,6 +1,7 @@
 const Order = require("../models/OrderModel");
 const Status = require("../models/StatusModel");
 const UserAssetsService = require("./UserAssetsService");
+const EmailService = require("./EmailService");
 const mongoose = require("mongoose");
 const axios = require("axios");
 // Kiểm tra tồn tại đơn hàng
@@ -136,6 +137,17 @@ const createOrder = async (orderData) => {
         );
       } catch (error) {
         console.error("Lỗi khi cập nhật mô hình khuyến nghị:", error);
+      }
+
+      // 🔔 GỬI EMAIL XÁC NHẬN ĐƠN HÀNG
+      try {
+        await EmailService.sendOrderConfirmationEmail(newOrder._id);
+        console.log(
+          `📧 Email xác nhận đơn hàng ${newOrder.orderCode} đã được gửi`
+        );
+      } catch (emailError) {
+        console.error("⚠️ Không thể gửi email xác nhận:", emailError.message);
+        // Không throw error để không ảnh hưởng đến việc tạo đơn hàng
       }
 
       resolve({
@@ -295,20 +307,46 @@ const getOrdersByUser = (userId) => {
 const updateOrderStatus = (id, statusId) => {
   return new Promise(async (resolve, reject) => {
     try {
+      // Lấy thông tin đơn hàng cũ để có oldStatus
+      const oldOrder = await Order.findById(id).populate("status");
+      if (!oldOrder) {
+        return reject(new Error("Order not found"));
+      }
+
+      const oldStatusCode = oldOrder.status?.statusCode || "PENDING";
+
       // Kiểm tra _id có hợp lệ không
-      const status = await Status.findById(statusId);
-      if (!status) {
+      const newStatus = await Status.findById(statusId);
+      if (!newStatus) {
         return reject(new Error("Invalid status ID"));
       }
 
       const updatedOrder = await Order.findByIdAndUpdate(
         id,
-        { status: status._id },
+        { status: newStatus._id },
         { new: true }
       );
 
       if (!updatedOrder) {
         return reject(new Error("Order not found"));
+      }
+
+      // 🔔 GỬI EMAIL THÔNG BÁO THAY ĐỔI TRẠNG THÁI
+      try {
+        await EmailService.sendOrderStatusUpdateEmail(
+          updatedOrder._id,
+          oldStatusCode,
+          newStatus.statusCode
+        );
+        console.log(
+          `📧 Email cập nhật trạng thái đơn hàng ${updatedOrder.orderCode}: ${oldStatusCode} → ${newStatus.statusCode}`
+        );
+      } catch (emailError) {
+        console.error(
+          "⚠️ Không thể gửi email cập nhật trạng thái:",
+          emailError.message
+        );
+        // Không throw error để không ảnh hưởng đến việc cập nhật trạng thái
       }
 
       resolve(updatedOrder);

@@ -108,9 +108,95 @@ const updateRating = async (req, res) => {
   }
 };
 
+// Admin: Get all ratings
+const getAllRatings = async (req, res) => {
+  try {
+    const { search, sortBy, sortOrder } = req.query;
+
+    const response = await RatingService.getAllRatings({
+      search,
+      sortBy,
+      sortOrder,
+    });
+
+    return res.status(200).json(response);
+  } catch (e) {
+    return res.status(500).json({
+      message: e.message,
+    });
+  }
+};
+
+// Admin: Delete rating
+const deleteRating = async (req, res) => {
+  try {
+    const { ratingId } = req.params;
+
+    if (!ratingId) {
+      return res.status(400).json({
+        status: "ERR",
+        message: "Thiếu ID đánh giá",
+      });
+    }
+
+    const response = await RatingService.deleteRating(ratingId);
+    return res.status(200).json(response);
+  } catch (e) {
+    return res.status(500).json({
+      message: e.message,
+    });
+  }
+};
+
+// Admin: Toggle rating visibility
+const toggleRatingVisibility = async (req, res) => {
+  try {
+    const { ratingId } = req.params;
+
+    if (!ratingId) {
+      return res.status(400).json({
+        status: "ERR",
+        message: "Thiếu ID đánh giá",
+      });
+    }
+
+    const response = await RatingService.toggleRatingVisibility(ratingId);
+    return res.status(200).json(response);
+  } catch (e) {
+    return res.status(500).json({
+      message: e.message,
+    });
+  }
+};
+
+// Admin: Delete multiple ratings
+const deleteMultipleRatings = async (req, res) => {
+  try {
+    const { ratingIds } = req.body;
+
+    if (!ratingIds || !Array.isArray(ratingIds) || ratingIds.length === 0) {
+      return res.status(400).json({
+        status: "ERR",
+        message: "Thiếu danh sách ID đánh giá",
+      });
+    }
+
+    const response = await RatingService.deleteMultipleRatings(ratingIds);
+    return res.status(200).json(response);
+  } catch (e) {
+    return res.status(500).json({
+      message: e.message,
+    });
+  }
+};
+
 module.exports = {
   createRating,
   getProductRatings,
   getUserRating,
   updateRating,
+  getAllRatings,
+  deleteRating,
+  toggleRatingVisibility,
+  deleteMultipleRatings,
 };

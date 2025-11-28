@@ -107,7 +107,8 @@ const createRating = async (ratingData) => {
 const getProductRatings = async (productId) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const ratings = await Rating.find({ productId })
+      // Only return visible ratings for public view
+      const ratings = await Rating.find({ productId, isVisible: true })
         .sort({ createdAt: -1 })
         .populate("userId", "userName");
 
@@ -212,9 +213,191 @@ const updateRating = async (ratingId, userId, updateData) => {
   });
 };
 
+// Admin: Get all ratings with filters
+const getAllRatings = async (filters = {}) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const { search, sortBy = "createdAt", sortOrder = "desc" } = filters;
+
+      let query = {};
+
+      // Apply search filter
+      if (search) {
+        query.$or = [
+          { userName: { $regex: search, $options: "i" } },
+          { comment: { $regex: search, $options: "i" } },
+        ];
+      }
+
+      // Build sort object
+      const sort = {};
+      sort[sortBy] = sortOrder === "asc" ? 1 : -1;
+
+      const ratings = await Rating.find(query)
+        .populate("userId", "userName email")
+        .populate("productId", "productName productCode")
+        .populate({
+          path: "orderId",
+          select: "orderCode",
+          options: { strictPopulate: false }, // Allow null values
+        })
+        .sort(sort)
+        .lean(); // Convert to plain objects
+
+      resolve({
+        status: "OK",
+        message: "Lấy danh sách đánh giá thành công",
+        data: ratings,
+      });
+    } catch (e) {
+      reject({
+        status: "ERR",
+        message: e.message,
+      });
+    }
+  });
+};
+
+// Admin: Delete rating
+const deleteRating = async (ratingId) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const rating = await Rating.findById(ratingId);
+      if (!rating) {
+        return reject({
+          status: "ERR",
+          message: "Không tìm thấy đánh giá",
+        });
+      }
+
+      await Rating.findByIdAndDelete(ratingId);
+
+      // Recalculate product average rating
+      const allRatings = await Rating.find({ productId: rating.productId });
+      if (allRatings.length > 0) {
+        const totalRating = allRatings.reduce(
+          (sum, item) => sum + item.rating,
+          0
+        );
+        const averageRating = totalRating / allRatings.length;
+        await Product.findByIdAndUpdate(rating.productId, {
+          averageRating: Number(averageRating.toFixed(1)),
+          totalRatings: allRatings.length,
+        });
+      } else {
+        await Product.findByIdAndUpdate(rating.productId, {
+          averageRating: 0,
+          totalRatings: 0,
+        });
+      }
+
+      resolve({
+        status: "OK",
+        message: "Xóa đánh giá thành công",
+      });
+    } catch (e) {
+      reject({
+        status: "ERR",
+        message: e.message,
+      });
+    }
+  });
+};
+
+// Admin: Toggle rating visibility
+const toggleRatingVisibility = async (ratingId) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const rating = await Rating.findById(ratingId);
+      if (!rating) {
+        return reject({
+          status: "ERR",
+          message: "Không tìm thấy đánh giá",
+        });
+      }
+
+      rating.isVisible = !rating.isVisible;
+      await rating.save();
+
+      // Populate để trả về đầy đủ thông tin
+      const populatedRating = await Rating.findById(ratingId)
+        .populate("userId", "userName email")
+        .populate("productId", "productName productCode")
+        .populate({
+          path: "orderId",
+          select: "orderCode",
+          options: { strictPopulate: false },
+        })
+        .lean();
+
+      resolve({
+        status: "OK",
+        message: `Đánh giá đã được ${rating.isVisible ? "hiển thị" : "ẩn"}`,
+        data: populatedRating,
+      });
+    } catch (e) {
+      reject({
+        status: "ERR",
+        message: e.message,
+      });
+    }
+  });
+};
+
+// Admin: Delete multiple ratings
+const deleteMultipleRatings = async (ratingIds) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      // Get all ratings to be deleted for product recalculation
+      const ratings = await Rating.find({ _id: { $in: ratingIds } });
+      const productIds = [
+        ...new Set(ratings.map((r) => r.productId.toString())),
+      ];
+
+      // Delete all ratings
+      await Rating.deleteMany({ _id: { $in: ratingIds } });
+
+      // Recalculate average rating for affected products
+      for (const productId of productIds) {
+        const remainingRatings = await Rating.find({ productId });
+        if (remainingRatings.length > 0) {
+          const totalRating = remainingRatings.reduce(
+            (sum, item) => sum + item.rating,
+            0
+          );
+          const averageRating = totalRating / remainingRatings.length;
+          await Product.findByIdAndUpdate(productId, {
+            averageRating: Number(averageRating.toFixed(1)),
+            totalRatings: remainingRatings.length,
+          });
+        } else {
+          await Product.findByIdAndUpdate(productId, {
+            averageRating: 0,
+            totalRatings: 0,
+          });
+        }
+      }
+
+      resolve({
+        status: "OK",
+        message: "Xóa đánh giá thành công",
+      });
+    } catch (e) {
+      reject({
+        status: "ERR",
+        message: e.message,
+      });
+    }
+  });
+};
+
 module.exports = {
   createRating,
   getProductRatings,
   getUserRating,
   updateRating,
+  getAllRatings,
+  deleteRating,
+  toggleRatingVisibility,
+  deleteMultipleRatings,
 };

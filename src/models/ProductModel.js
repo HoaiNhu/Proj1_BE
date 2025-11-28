@@ -18,6 +18,8 @@ const productSchema = new mongoose.Schema(
     productDescription: { type: String, required: true },
     productDiscount: { type: Number, default: 0 },
     isHidden: { type: Boolean, default: false }, // Ẩn/hiện sản phẩm với client
+    viewCount: { type: Number, default: 0 }, // Số lượt xem sản phẩm
+    clickCount: { type: Number, default: 0 }, // Số lượt click vào sản phẩm
   },
   {
     timestamps: true,

@@ -12,7 +12,9 @@
     "build": "cd ../client && npm install && npm run build",
     "check-env": "node check-env.js",
     "test-mongo": "node test-mongo-connection.js",
-    "generate-secrets": "node generate-secrets.js"
+    "generate-secrets": "node generate-secrets.js",
+    "test-email": "node test-email-config.js",
+    "test-order-email": "node test-order-email.js"
   },
   "author": "",
   "license": "ISC",

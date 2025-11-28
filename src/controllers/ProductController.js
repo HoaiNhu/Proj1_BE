@@ -250,6 +250,48 @@ const toggleProductVisibility = async (req, res) => {
   }
 };
 
+// Increment product view count
+const incrementViewCount = async (req, res) => {
+  try {
+    const productId = req.params.id;
+
+    if (!productId) {
+      return res.status(400).json({
+        status: "ERR",
+        message: "The productId is required",
+      });
+    }
+
+    const response = await ProductService.incrementViewCount(productId);
+    return res.status(200).json(response);
+  } catch (e) {
+    return res.status(500).json({
+      message: e.message || "Something went wrong",
+    });
+  }
+};
+
+// Increment product click count
+const incrementClickCount = async (req, res) => {
+  try {
+    const productId = req.params.id;
+
+    if (!productId) {
+      return res.status(400).json({
+        status: "ERR",
+        message: "The productId is required",
+      });
+    }
+
+    const response = await ProductService.incrementClickCount(productId);
+    return res.status(200).json(response);
+  } catch (e) {
+    return res.status(500).json({
+      message: e.message || "Something went wrong",
+    });
+  }
+};
+
 module.exports = {
   createProduct,
   updateProduct,
@@ -261,4 +303,6 @@ module.exports = {
   getWeeklyNewProducts,
   getPreviousWeekNewProducts,
   toggleProductVisibility,
+  incrementViewCount,
+  incrementClickCount,
 };

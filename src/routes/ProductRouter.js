@@ -41,4 +41,7 @@ router.patch(
   authMiddleware,
   productController.toggleProductVisibility
 );
+router.post("/track-view/:id", productController.incrementViewCount);
+router.post("/track-click/:id", productController.incrementClickCount);
+
 module.exports = router;

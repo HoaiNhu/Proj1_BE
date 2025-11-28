@@ -391,6 +391,76 @@ const toggleProductVisibility = (id) => {
   });
 };
 
+/**
+ * Increment product view count
+ */
+const incrementViewCount = (id) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const product = await Product.findById(id);
+
+      if (!product) {
+        return resolve({
+          status: "ERR",
+          message: "Product not found",
+        });
+      }
+
+      const updatedProduct = await Product.findByIdAndUpdate(
+        id,
+        { $inc: { viewCount: 1 } },
+        { new: true }
+      );
+
+      resolve({
+        status: "OK",
+        message: "View count incremented successfully",
+        data: updatedProduct,
+      });
+    } catch (e) {
+      reject({
+        status: "ERR",
+        message: e.message || "Failed to increment view count",
+      });
+    }
+  });
+};
+
+/**
+ * Increment product click count
+ */
+const incrementClickCount = (id) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const product = await Product.findById(id);
+
+      if (!product) {
+        return resolve({
+          status: "ERR",
+          message: "Product not found",
+        });
+      }
+
+      const updatedProduct = await Product.findByIdAndUpdate(
+        id,
+        { $inc: { clickCount: 1 } },
+        { new: true }
+      );
+
+      resolve({
+        status: "OK",
+        message: "Click count incremented successfully",
+        data: updatedProduct,
+      });
+    } catch (e) {
+      reject({
+        status: "ERR",
+        message: e.message || "Failed to increment click count",
+      });
+    }
+  });
+};
+
 module.exports = {
   createProduct,
   updateProduct,
@@ -402,4 +472,6 @@ module.exports = {
   getWeeklyNewProducts,
   getPreviousWeekNewProducts,
   toggleProductVisibility,
+  incrementViewCount,
+  incrementClickCount,
 };
