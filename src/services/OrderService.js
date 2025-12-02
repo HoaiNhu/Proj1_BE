@@ -2,6 +2,8 @@ const Order = require("../models/OrderModel");
 const Status = require("../models/StatusModel");
 const UserAssetsService = require("./UserAssetsService");
 const EmailService = require("./EmailService");
+const RankService = require("./RankService");
+const User = require("../models/UserModel");
 const mongoose = require("mongoose");
 const axios = require("axios");
 // Kiểm tra tồn tại đơn hàng
@@ -47,11 +49,31 @@ const createOrder = async (orderData) => {
       } = orderData;
 
       // Tính toán các giá trị tổng
-      const totalItemPrice = orderItems.reduce(
+      let totalItemPrice = orderItems.reduce(
         (sum, item) => sum + item.total,
         0
       );
-      const totalPrice = totalItemPrice + shippingPrice;
+
+      // Áp dụng rank discount nếu user đã đăng nhập
+      let rankDiscount = 0;
+      let rankDiscountPercent = 0;
+      if (userId) {
+        try {
+          const user = await User.findById(userId).populate("currentRank");
+          if (user && user.currentRank && user.currentRank.isActive) {
+            rankDiscountPercent = user.currentRank.discountPercent;
+            rankDiscount = (totalItemPrice * rankDiscountPercent) / 100;
+            console.log(
+              `🎖️ Áp dụng rank discount ${rankDiscountPercent}% cho user ${userId}`
+            );
+          }
+        } catch (error) {
+          console.error("Error applying rank discount:", error);
+          // Không throw error, chỉ log
+        }
+      }
+
+      const totalPrice = totalItemPrice - rankDiscount + shippingPrice;
 
       // Kiểm tra dữ liệu
       if (!orderItems || orderItems.length === 0) {
@@ -119,12 +141,18 @@ const createOrder = async (orderData) => {
         userId: userId || null,
         shippingPrice,
         totalItemPrice,
+        rankDiscount,
+        rankDiscountPercent,
         totalPrice,
         deliveryDate,
         deliveryTime,
         status: statusObj._id,
         orderNote,
       });
+
+      // ❌ KHÔNG CẬP NHẬT RANK Ở ĐÂY
+      // Rank chỉ được cập nhật khi đơn hàng chuyển sang trạng thái COMPLETED
+      // Logic update rank đã được chuyển vào updateOrderStatus()
 
       // Gọi API FastAPI để cập nhật mô hình khuyến nghị
       try {
@@ -329,6 +357,23 @@ const updateOrderStatus = (id, statusId) => {
 
       if (!updatedOrder) {
         return reject(new Error("Order not found"));
+      }
+
+      // 🎖️ CẬP NHẬT RANK KHI ĐƠN HÀNG COMPLETED
+      // Chỉ cập nhật totalSpending và rank khi đơn hàng chuyển sang COMPLETED
+      if (newStatus.statusCode === "COMPLETED" && updatedOrder.userId) {
+        try {
+          await RankService.updateUserSpendingAndRank(
+            updatedOrder.userId,
+            updatedOrder.totalPrice
+          );
+          console.log(
+            `🎖️ Đã cập nhật totalSpending và rank cho user ${updatedOrder.userId} với số tiền ${updatedOrder.totalPrice}`
+          );
+        } catch (rankError) {
+          console.error("⚠️ Lỗi khi cập nhật rank:", rankError.message);
+          // Không throw error để không ảnh hưởng đến việc cập nhật trạng thái
+        }
       }
 
       // 🔔 GỬI EMAIL THÔNG BÁO THAY ĐỔI TRẠNG THÁI

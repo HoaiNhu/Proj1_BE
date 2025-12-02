@@ -17,6 +17,7 @@ const PuzzleRouter = require("./PuzzleRouter");
 const UserAssetsRouter = require("./UserAssetsRouter");
 const SearchHistoryRouter = require("./SearchHistoryRouter");
 const VoucherRouter = require("./VoucherRouter");
+const RankRouter = require("./RankRouter");
 
 const routes = (app) => {
   app.use("/api/user", UserRouter);
@@ -37,6 +38,7 @@ const routes = (app) => {
   app.use("/api/puzzle", PuzzleRouter);
   app.use("/api/user-assets", UserAssetsRouter);
   app.use("/api/search-history", SearchHistoryRouter);
+  app.use("/api/rank", RankRouter);
 };
 
 module.exports = routes;

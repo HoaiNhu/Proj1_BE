@@ -187,19 +187,55 @@ const deleteUser = (id) => {
 const getAllUser = (limit = 4, page = 0) => {
   return new Promise(async (resolve, reject) => {
     try {
+      const Order = require("../models/OrderModel");
+
       const totalUser = await User.countDocuments();
       const allUser = await User.find()
+        .populate({
+          path: "currentRank",
+          select:
+            "rankName rankDisplayName rankCode discountPercent minSpending maxSpending priority color icon benefits description",
+        })
         .limit(limit)
-        .skip(page * limit);
+        .skip(page * limit)
+        .lean(); // Sử dụng lean() để cải thiện performance
+
+      // Đếm số đơn hàng cho mỗi user
+      const usersWithOrders = await Promise.all(
+        allUser.map(async (user) => {
+          const orderCount = await Order.countDocuments({ userId: user._id });
+
+          // Debug log
+          if (user.currentRank) {
+            console.log(
+              `👥 User ${user.userName} - Rank:`,
+              user.currentRank.rankDisplayName,
+              "Orders:",
+              orderCount
+            );
+          }
+
+          return {
+            ...user,
+            orderCount, // Thêm field orderCount
+          };
+        })
+      );
+
+      console.log(
+        `📋 Total users: ${totalUser}, Fetched: ${usersWithOrders.length}`
+      );
+
       resolve({
         status: "OK",
         message: "Get all USER IS SUCCESS",
-        data: allUser,
+        data: usersWithOrders,
         total: totalUser,
         pageCurrent: Number(page + 1),
         totalPage: Math.ceil(totalUser / limit),
       });
     } catch (e) {
+      console.error("❌ Error in getAllUser:", e);
       reject(e);
     }
   });

@@ -52,6 +52,18 @@ const userSchema = new mongoose.Schema(
     // Trường OTP
     resetPasswordOTP: { type: String },
     resetPasswordExpires: { type: Date },
+
+    // Hệ thống Rank
+    currentRank: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Rank",
+      default: null, // Sẽ được set khi user mua hàng lần đầu
+    },
+    totalSpending: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
   },
   {
     timestamps: true,

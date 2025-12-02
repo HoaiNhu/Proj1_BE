@@ -577,7 +577,162 @@ const sendOrderStatusUpdateEmail = async (
   }
 };
 
+/**
+ * GỬI EMAIL THÔNG BÁO THĂNG HẠNG
+ * Gọi khi user thăng hạng
+ */
+const sendRankUpEmail = async (userEmail, data) => {
+  try {
+    const {
+      userName,
+      rankName,
+      discountPercent,
+      benefits,
+      voucherCode,
+      voucherDiscount,
+      voucherExpiry,
+    } = data;
+
+    // Tạo transporter
+    const transporter = createTransporter();
+
+    const benefitsHTML = benefits
+      .map((benefit) => `<li style="margin: 8px 0;">${benefit}</li>`)
+      .join("");
+
+    // Tạo email HTML
+    const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chúc mừng thăng hạng</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f4; padding: 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          
+          <!-- Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); padding: 40px; text-align: center;">
+              <h1 style="color: #ffffff; margin: 0; font-size: 32px;">🎉 Chúc mừng!</h1>
+              <p style="color: #ffffff; margin: 15px 0 0 0; font-size: 18px;">Bạn đã thăng hạng thành công!</p>
+            </td>
+          </tr>
+          
+          <!-- Content -->
+          <tr>
+            <td style="padding: 40px;">
+              <h2 style="color: #333; margin-top: 0;">Xin chào ${userName}! 👋</h2>
+              
+              <div style="text-align: center; margin: 30px 0;">
+                <div style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px 50px; border-radius: 20px;">
+                  <p style="margin: 0; color: #ffffff; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Hạng mới của bạn</p>
+                  <h1 style="margin: 10px 0; color: #FFD700; font-size: 36px;">${rankName}</h1>
+                  <p style="margin: 10px 0 0 0; color: #ffffff; font-size: 18px;">Giảm giá ${discountPercent}%</p>
+                </div>
+              </div>
+              
+              <p style="color: #666; line-height: 1.6; text-align: center; font-size: 16px;">
+                Cảm ơn bạn đã đồng hành cùng Avocado Cake Shop!<br/>
+                Với hạng <strong>${rankName}</strong>, bạn sẽ được hưởng nhiều đặc quyền hơn.
+              </p>
+              
+              <!-- Benefits -->
+              <div style="margin: 30px 0; padding: 25px; background-color: #f9f9f9; border-radius: 12px; border-left: 4px solid #667eea;">
+                <h3 style="margin-top: 0; color: #333;">🎁 Đặc quyền của bạn:</h3>
+                <ul style="color: #666; line-height: 1.8; padding-left: 20px;">
+                  ${benefitsHTML}
+                </ul>
+              </div>
+              
+              ${
+                voucherCode
+                  ? `
+              <!-- Voucher Gift -->
+              <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 25px; border-radius: 12px; margin: 30px 0; text-align: center;">
+                <h3 style="margin: 0 0 15px 0; color: #ffffff;">🎟️ Quà tặng đặc biệt</h3>
+                <div style="background: white; padding: 20px; border-radius: 8px;">
+                  <p style="margin: 0; font-size: 14px; color: #666;">Mã voucher</p>
+                  <h2 style="margin: 8px 0; font-family: 'Courier New', monospace; letter-spacing: 3px; color: #667eea;">${voucherCode}</h2>
+                  <p style="margin: 0; font-size: 14px; color: #28a745; font-weight: bold;">Giảm thêm ${voucherDiscount}%</p>
+                </div>
+                <p style="margin: 15px 0 0 0; color: #ffffff; font-size: 13px;">
+                  Hiệu lực đến: ${new Date(voucherExpiry).toLocaleDateString(
+                    "vi-VN"
+                  )}
+                </p>
+              </div>
+              `
+                  : ""
+              }
+              
+              <div style="text-align: center; margin: 40px 0;">
+                <a href="${
+                  process.env.FRONTEND_URL || "http://localhost:3000"
+                }/rank-benefits" 
+                   style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 40px; text-decoration: none; border-radius: 30px; font-weight: bold; font-size: 16px;">
+                  Xem chi tiết hạng thành viên
+                </a>
+              </div>
+              
+              <div style="margin-top: 30px; padding: 20px; background-color: #f0f7ff; border-radius: 8px; text-align: center;">
+                <p style="margin: 0; color: #666; line-height: 1.6;">
+                  Tiếp tục mua sắm để duy trì và nâng cao hạng thành viên của bạn.<br/>
+                  Mỗi đơn hàng đều được tích lũy vào tổng chi tiêu!
+                </p>
+              </div>
+            </td>
+          </tr>
+          
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f9f9f9; padding: 20px; text-align: center; color: #999; font-size: 12px;">
+              <p style="margin: 0;">© 2024 Avocado Cake Shop - Bánh thơm ngon, tình yêu trọn vẹn 💚</p>
+              <p style="margin: 5px 0;">Email: support@avocadocake.com | Hotline: 1900-xxxx</p>
+            </td>
+          </tr>
+          
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+    `;
+
+    // Cấu hình email
+    const mailOptions = {
+      from: `"Avocado Cake Shop 🎂" <${process.env.EMAIL_FROM}>`,
+      to: userEmail,
+      subject: `🎉 Chúc mừng! Bạn đã thăng hạng ${rankName} - Avocado Cake Shop`,
+      html: htmlContent,
+    };
+
+    // Gửi email
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`✅ Email thăng hạng đã gửi đến ${userEmail}:`, info.messageId);
+
+    return {
+      success: true,
+      message: "Email sent successfully",
+      messageId: info.messageId,
+    };
+  } catch (error) {
+    console.error("❌ Error sending rank up email:", error);
+    // Không throw error để không ảnh hưởng đến flow thăng hạng
+    return {
+      success: false,
+      message: error.message,
+    };
+  }
+};
+
 module.exports = {
   sendOrderConfirmationEmail,
   sendOrderStatusUpdateEmail,
+  sendRankUpEmail,
 };

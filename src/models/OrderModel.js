@@ -68,6 +68,10 @@ const orderSchema = new mongoose.Schema(
     totalPrice: { type: Number, required: true }, // Tổng thanh toán (bao gồm vận chuyển)
     coinsUsed: { type: Number, default: 0 }, // Số xu đã sử dụng cho đơn hàng này
 
+    // Rank discount information
+    rankDiscount: { type: Number, default: 0 }, // Giảm giá từ rank
+    rankDiscountPercent: { type: Number, default: 0 }, // Phần trăm giảm giá từ rank
+
     // Voucher information
     vouchersUsed: [
       {
