@@ -47,6 +47,7 @@
     "nodemailer": "^6.10.0",
     "nodemon": "^3.1.9",
     "react-scripts": "^5.0.1",
+    "sepay-pg-node": "^1.0.0",
     "validator": "^13.12.0"
   }
 }

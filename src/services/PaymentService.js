@@ -14,9 +14,9 @@ const createPayment = (newPayment) => {
       totalPrice,
     } = newPayment;
     try {
-      const existingOrder = await Order.findById(orderId).populate(
-        "orderItems.product"
-      );
+      const existingOrder = await Order.findById(orderId)
+        .populate("orderItems.product")
+        .populate("userId");
       if (!existingOrder) {
         return resolve({ status: "ERR", message: "Order not found" });
       }
@@ -27,6 +27,47 @@ const createPayment = (newPayment) => {
           status: "ERR",
           message: "Order has already been paid",
         });
+      }
+
+      // 🎖️ Áp dụng rank discount nếu chưa có
+      let finalTotalPrice = totalPrice;
+      if (
+        existingOrder.userId &&
+        (!existingOrder.rankDiscount || existingOrder.rankDiscount === 0)
+      ) {
+        try {
+          const User = require("../models/UserModel");
+          const user = await User.findById(existingOrder.userId).populate(
+            "currentRank"
+          );
+          if (user && user.currentRank && user.currentRank.isActive) {
+            const rankDiscountPercent = user.currentRank.discountPercent;
+            const rankDiscount =
+              (existingOrder.totalItemPrice * rankDiscountPercent) / 100;
+
+            // Cập nhật order với rank discount
+            existingOrder.rankDiscount = rankDiscount;
+            existingOrder.rankDiscountPercent = rankDiscountPercent;
+            existingOrder.totalPrice =
+              existingOrder.totalItemPrice -
+              rankDiscount +
+              existingOrder.shippingPrice -
+              (existingOrder.voucherDiscount || 0) -
+              (existingOrder.coinsUsed || 0);
+            await existingOrder.save();
+
+            finalTotalPrice = existingOrder.totalPrice;
+            console.log(
+              `🎖️ Áp dụng rank discount ${rankDiscountPercent}% = ${rankDiscount}đ cho payment`
+            );
+          }
+        } catch (error) {
+          console.error("Error applying rank discount:", error);
+          // Không throw error, tiếp tục với giá gốc
+        }
+      } else {
+        // Sử dụng giá đã có rank discount
+        finalTotalPrice = existingOrder.totalPrice;
       }
 
       const PAYPAL_API_URL = process.env.PAYPAL_API_URL;
@@ -86,7 +127,7 @@ const createPayment = (newPayment) => {
               {
                 amount: {
                   currency_code: "USD",
-                  value: (totalPrice / 23000).toFixed(2), // Chuyển VND sang USD (tỷ giá giả định)
+                  value: (finalTotalPrice / 23000).toFixed(2), // Chuyển VND sang USD (tỷ giá giả định)
                 },
               },
             ],
@@ -158,11 +199,52 @@ const createQrPayment = (newPayment) => {
       totalPrice,
     } = newPayment;
     try {
-      const existingOrder = await Order.findById(orderId).populate(
-        "orderItems.product"
-      );
+      const existingOrder = await Order.findById(orderId)
+        .populate("orderItems.product")
+        .populate("userId");
       if (!existingOrder) {
         return resolve({ status: "ERR", message: "Order not found" });
+      }
+
+      // 🎖️ Áp dụng rank discount nếu chưa có
+      let finalTotalPrice = totalPrice;
+      if (
+        existingOrder.userId &&
+        (!existingOrder.rankDiscount || existingOrder.rankDiscount === 0)
+      ) {
+        try {
+          const User = require("../models/UserModel");
+          const user = await User.findById(existingOrder.userId).populate(
+            "currentRank"
+          );
+          if (user && user.currentRank && user.currentRank.isActive) {
+            const rankDiscountPercent = user.currentRank.discountPercent;
+            const rankDiscount =
+              (existingOrder.totalItemPrice * rankDiscountPercent) / 100;
+
+            // Cập nhật order với rank discount
+            existingOrder.rankDiscount = rankDiscount;
+            existingOrder.rankDiscountPercent = rankDiscountPercent;
+            existingOrder.totalPrice =
+              existingOrder.totalItemPrice -
+              rankDiscount +
+              existingOrder.shippingPrice -
+              (existingOrder.voucherDiscount || 0) -
+              (existingOrder.coinsUsed || 0);
+            await existingOrder.save();
+
+            finalTotalPrice = existingOrder.totalPrice;
+            console.log(
+              `🎖️ Áp dụng rank discount ${rankDiscountPercent}% = ${rankDiscount}đ cho QR payment`
+            );
+          }
+        } catch (error) {
+          console.error("Error applying rank discount:", error);
+          // Không throw error, tiếp tục với giá gốc
+        }
+      } else {
+        // Sử dụng giá đã có rank discount
+        finalTotalPrice = existingOrder.totalPrice;
       }
 
       // Tạo nội dung QR
@@ -180,7 +262,7 @@ const createQrPayment = (newPayment) => {
           .toUpperCase()
           .replace(/[^A-Z\s]/g, ""), // Tiếng Việt không dấu, viết hoa
         acqId: parseInt(adminBankInfo.bin), // Mã BIN dạng số
-        amount: totalPrice,
+        amount: finalTotalPrice,
         addInfo: `ORDER${paymentCode}`.substring(0, 25), // Giới hạn 25 ký tự
         // format: "text", // Hoặc "qrDataURL" nếu muốn ảnh
         format: "qrDataURL", // Trả về hình ảnh Data URI

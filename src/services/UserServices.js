@@ -261,7 +261,7 @@ const getDetailsUser = (id) => {
       //check email created
       const user = await User.findOne({
         _id: id,
-      });
+      }).populate("currentRank");
 
       // console.log("user", user);
       //nếu user ko tồn tại

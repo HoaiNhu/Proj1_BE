@@ -106,12 +106,13 @@ orderSchema.pre("save", function (next) {
     (total, item) => total + item.total,
     0
   );
-  // Tính tổng thanh toán (trừ đi số xu đã sử dụng và voucher discount)
+  // Tính tổng thanh toán (trừ đi rank discount, số xu đã sử dụng và voucher discount)
   order.totalPrice =
     order.totalItemPrice +
     order.shippingPrice -
-    order.coinsUsed -
-    order.voucherDiscount;
+    (order.rankDiscount || 0) -
+    (order.coinsUsed || 0) -
+    (order.voucherDiscount || 0);
   next();
 });
 

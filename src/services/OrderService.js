@@ -75,6 +75,14 @@ const createOrder = async (orderData) => {
 
       const totalPrice = totalItemPrice - rankDiscount + shippingPrice;
 
+      console.log("💰 Order creation calculation:", {
+        totalItemPrice,
+        rankDiscount,
+        rankDiscountPercent,
+        shippingPrice,
+        totalPrice,
+      });
+
       // Kiểm tra dữ liệu
       if (!orderItems || orderItems.length === 0) {
         return reject({
