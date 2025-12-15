@@ -53,9 +53,21 @@ const handleSepayCallback = async (req, res) => {
 
     // Redirect về frontend với thông tin
     const { paymentCode, orderId } = req.query;
-    const redirectUrl = `${
-      process.env.FRONTEND_URL || "http://localhost:3000"
-    }/payment-result?status=${status}&paymentCode=${paymentCode}&orderId=${orderId}`;
+
+    // Tự động detect frontend URL dựa trên môi trường
+    let frontendUrl = process.env.FRONTEND_URL;
+    if (!frontendUrl) {
+      // Nếu không có env var, dùng logic để detect
+      if (process.env.NODE_ENV === "production") {
+        // Production - thay YOUR_FRONTEND_DOMAIN bằng domain frontend thật
+        frontendUrl = "https://fe-project-avocado-cake.vercel.app";
+      } else {
+        // Development
+        frontendUrl = "http://localhost:3000";
+      }
+    }
+
+    const redirectUrl = `${frontendUrl}/payment-result?status=${status}&paymentCode=${paymentCode}&orderId=${orderId}`;
 
     return res.redirect(redirectUrl);
   } catch (e) {
@@ -69,13 +81,13 @@ const handleSepayCallback = async (req, res) => {
  */
 const handleSepayIPN = async (req, res) => {
   try {
-    console.log("🔔 Sepay IPN webhook received");
+    console.log(" Sepay IPN webhook received");
     const response = await SepayService.handleSepayIPN(req.body);
 
     // Trả về theo format Sepay yêu cầu
     return res.status(200).json({ success: true });
   } catch (e) {
-    console.error("❌ Error in handleSepayIPN:", e);
+    console.error(" Error in handleSepayIPN:", e);
     return res.status(500).json({ success: false, message: e.message });
   }
 };

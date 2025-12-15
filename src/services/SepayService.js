@@ -1,6 +1,7 @@
 const { SePayPgClient } = require("sepay-pg-node");
 const Order = require("../models/OrderModel");
 const Payment = require("../models/PaymentModel");
+const Status = require("../models/StatusModel");
 
 /**
  * Tạo thanh toán Sepay
@@ -278,9 +279,22 @@ const handleSepayIPN = (ipnData) => {
         payment.transId = transaction?.transaction_id;
         payment.sepayData = ipnData;
 
+        // 🎯 Tìm status "PAID" (Đã thanh toán) trong database
+        const paidStatus = await Status.findOne({ statusCode: "PAID" });
+
         existingOrder.paymentStatus = "SUCCESS";
         existingOrder.isPaid = true;
         existingOrder.paidAt = new Date();
+
+        // Cập nhật status đơn hàng sang "PAID" nếu tồn tại
+        if (paidStatus) {
+          existingOrder.status = paidStatus._id;
+          console.log(`🎯 Order status updated to PAID (${paidStatus._id})`);
+        } else {
+          console.warn(
+            `⚠️ PAID status not found in database, keeping current status`
+          );
+        }
 
         await payment.save();
         await existingOrder.save();

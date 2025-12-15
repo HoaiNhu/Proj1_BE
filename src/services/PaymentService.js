@@ -327,7 +327,42 @@ const createQrPayment = (newPayment) => {
 const getDetailPayment = (paymentCode) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const payment = await Payment.findOne({ paymentCode });
+      console.log("🔍 getDetailPayment called with paymentCode:", paymentCode);
+
+      // Thử tìm theo paymentCode trước
+      let payment = await Payment.findOne({ paymentCode });
+
+      // Nếu không tìm thấy và paymentCode có dạng ObjectId, thử tìm theo orderId
+      if (!payment && paymentCode.match(/^[0-9a-fA-F]{24}$/)) {
+        console.log("🔍 Not found by paymentCode, trying as orderId...");
+        payment = await Payment.findOne({ orderId: paymentCode });
+      }
+
+      console.log("🔍 Payment query result:", payment ? "FOUND" : "NOT FOUND");
+      if (payment) {
+        console.log("🔍 Payment details:", {
+          _id: payment._id,
+          paymentCode: payment.paymentCode,
+          orderId: payment.orderId?.toString(),
+          status: payment.status,
+          paymentMethod: payment.paymentMethod,
+        });
+      } else {
+        // Debug: tìm xem có payment nào không
+        const allPayments = await Payment.find({})
+          .limit(5)
+          .sort({ createdAt: -1 });
+        console.log(
+          "🔍 Recent payments in DB:",
+          allPayments.map((p) => ({
+            paymentCode: p.paymentCode,
+            orderId: p.orderId?.toString(),
+            status: p.status,
+            createdAt: p.createdAt,
+          }))
+        );
+      }
+
       if (!payment) {
         return resolve({ status: "ERR", message: "Payment not found" });
       }
@@ -338,6 +373,7 @@ const getDetailPayment = (paymentCode) => {
         data: payment,
       });
     } catch (e) {
+      console.error("❌ Error in getDetailPayment:", e);
       reject(e);
     }
   });
