@@ -329,13 +329,13 @@ const getDetailPayment = (paymentCode) => {
     try {
       console.log("🔍 getDetailPayment called with paymentCode:", paymentCode);
 
-      // Thử tìm theo paymentCode trước
-      let payment = await Payment.findOne({ paymentCode });
+      // Thử tìm theo paymentCode trước (không dùng cache, lấy fresh từ DB)
+      let payment = await Payment.findOne({ paymentCode }).lean();
 
       // Nếu không tìm thấy và paymentCode có dạng ObjectId, thử tìm theo orderId
       if (!payment && paymentCode.match(/^[0-9a-fA-F]{24}$/)) {
         console.log("🔍 Not found by paymentCode, trying as orderId...");
-        payment = await Payment.findOne({ orderId: paymentCode });
+        payment = await Payment.findOne({ orderId: paymentCode }).lean();
       }
 
       console.log("🔍 Payment query result:", payment ? "FOUND" : "NOT FOUND");
@@ -346,12 +346,14 @@ const getDetailPayment = (paymentCode) => {
           orderId: payment.orderId?.toString(),
           status: payment.status,
           paymentMethod: payment.paymentMethod,
+          updatedAt: payment.updatedAt,
         });
       } else {
         // Debug: tìm xem có payment nào không
         const allPayments = await Payment.find({})
           .limit(5)
-          .sort({ createdAt: -1 });
+          .sort({ createdAt: -1 })
+          .lean();
         console.log(
           "🔍 Recent payments in DB:",
           allPayments.map((p) => ({
