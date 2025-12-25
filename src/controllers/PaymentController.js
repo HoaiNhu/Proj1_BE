@@ -22,6 +22,12 @@ const createQrPayment = async (req, res) => {
 const getDetailPayment = async (req, res) => {
   try {
     const { paymentCode } = req.params;
+
+    // Thêm headers để tránh cache
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", "0");
+
     const response = await PaymentService.getDetailPayment(paymentCode);
     return res.status(200).json(response);
   } catch (e) {
