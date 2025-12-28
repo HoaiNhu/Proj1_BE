@@ -162,18 +162,23 @@ const createOrder = async (orderData) => {
       // Rank chỉ được cập nhật khi đơn hàng chuyển sang trạng thái COMPLETED
       // Logic update rank đã được chuyển vào updateOrderStatus()
 
-      // Gọi API FastAPI để cập nhật mô hình khuyến nghị
+      // ⏸️ TẠM THỜI TẮT CẬP NHẬT MÔ HÌNH KHUYẾN NGHỊ
+      // Lý do: API FastAPI có rate limiting (429), không nên gọi mỗi lần tạo order
+      // Giải pháp: Sử dụng scheduled job hoặc trigger khi cần thiết
+      // TODO: Implement cron job hoặc webhook để update model định kỳ
+      /*
       try {
         await axios.post(
           `${process.env.FASTAPI_URL}/update-model`,
           {},
           {
-            timeout: 30000, // 30 giây timeout
+            timeout: 30000,
           }
         );
       } catch (error) {
         console.error("Lỗi khi cập nhật mô hình khuyến nghị:", error);
       }
+      */
 
       // 🔔 GỬI EMAIL XÁC NHẬN ĐƠN HÀNG
       try {

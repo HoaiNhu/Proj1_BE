@@ -17,12 +17,48 @@ const createDiscount = async (req, res) => {
   }
 };
 
-
 // Cập nhật khuyến mãi
 const updateDiscount = async (req, res) => {
   try {
     const { id } = req.params;
-    const result = await DiscountService.updateDiscount(id, req.body);
+    const data = req.body;
+
+    console.log("[DEBUG BACKEND] Raw req.body:", req.body);
+    console.log(
+      "[DEBUG BACKEND] discountProduct type:",
+      typeof data.discountProduct
+    );
+    console.log("[DEBUG BACKEND] discountProduct value:", data.discountProduct);
+
+    // Nếu có file ảnh thì gán vào discountImage
+    if (req.file) {
+      data.discountImage = req.file.path;
+    }
+
+    // Parse discountProduct nếu nó là string JSON
+    if (data.discountProduct && typeof data.discountProduct === "string") {
+      try {
+        data.discountProduct = JSON.parse(data.discountProduct);
+        console.log("[DEBUG BACKEND] After parse:", data.discountProduct);
+        console.log(
+          "[DEBUG BACKEND] Array length:",
+          data.discountProduct.length
+        );
+      } catch (e) {
+        console.log("[DEBUG BACKEND] Parse error:", e.message);
+        return res.status(400).json({
+          status: "ERR",
+          message: "discountProduct không hợp lệ",
+        });
+      }
+    }
+
+    console.log(
+      "[DEBUG BACKEND] Final data.discountProduct:",
+      data.discountProduct
+    );
+
+    const result = await DiscountService.updateDiscount(id, data);
     return res.status(result.status === "OK" ? 200 : 400).json(result);
   } catch (error) {
     return res.status(500).json({ status: "ERR", message: error.message });

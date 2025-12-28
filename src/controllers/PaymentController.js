@@ -1,5 +1,6 @@
 const PaymentService = require("../services/PaymentService");
 const SepayService = require("../services/SepayService");
+const EmailService = require("../services/EmailService");
 
 const createPayment = async (req, res) => {
   try {
@@ -124,6 +125,50 @@ const cancelSepayOrder = async (req, res) => {
   }
 };
 
+// ============ EMAIL NOTIFICATION ============
+
+/**
+ * Gửi email sau thanh toán thành công
+ * Được gọi từ PaymentResultPage sau khi confirm thanh toán thành công
+ */
+const sendPaymentSuccessEmail = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+
+    console.log(
+      `📧 Request to send payment success email for order: ${orderId}`
+    );
+
+    if (!orderId) {
+      return res.status(400).json({
+        status: "ERR",
+        message: "Order ID is required",
+      });
+    }
+
+    const result = await EmailService.sendPaymentSuccessEmail(orderId);
+
+    if (result.success) {
+      return res.status(200).json({
+        status: "OK",
+        message: "Payment success email sent successfully",
+        data: result,
+      });
+    } else {
+      return res.status(500).json({
+        status: "ERR",
+        message: result.message || "Failed to send email",
+      });
+    }
+  } catch (e) {
+    console.error("❌ Error in sendPaymentSuccessEmail controller:", e);
+    return res.status(500).json({
+      status: "ERR",
+      message: e.message,
+    });
+  }
+};
+
 module.exports = {
   createPayment,
   createQrPayment,
@@ -134,4 +179,6 @@ module.exports = {
   handleSepayIPN,
   getSepayPaymentDetail,
   cancelSepayOrder,
+  // Email notification
+  sendPaymentSuccessEmail,
 };

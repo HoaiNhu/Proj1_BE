@@ -32,4 +32,11 @@ router.get(
 // Hủy đơn hàng Sepay
 router.post("/sepay/cancel/:paymentCode", PaymentController.cancelSepayOrder);
 
+// ============ EMAIL NOTIFICATION ============
+// Gửi email sau thanh toán thành công
+router.post(
+  "/send-payment-success-email/:orderId",
+  PaymentController.sendPaymentSuccessEmail
+);
+
 module.exports = router;
