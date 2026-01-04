@@ -56,7 +56,7 @@ app.get("/ping", (req, res) => {
 // VD: CORS_ORIGINS=https://fe.example.com,https://www.example.com
 const ALLOWED_ORIGINS = (
   process.env.CORS_ORIGINS ||
-  "https://avocado-app.onrender.com,http://localhost:3000,http://localhost:3100,http://localhost:8000,https://rcm-system.onrender.com,https://fe-project-avocado-cake.vercel.app,https://rcm-price.onrender.com,https://rcm-recipe-3.onrender.com"
+  "https://avocado-app.onrender.com,http://localhost:3000,http://localhost:3100,http://localhost:8000,https://rcm-system.onrender.com,https://fe-project-avocado-cake.vercel.app,https://rcm-price.onrender.com,https://rcm-recipe-3.onrender.com,https://6ce629c97445.ngrok-free.app"
 )
   .split(",")
   .map((s) => s.trim());
